@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIFF 免費結單系統</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body { font-family: -apple-system, sans-serif; background: #f4f4f4; padding: 15px; }
+        .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .product-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0; }
+        .btn-group { display: flex; align-items: center; }
+        .btn-group button { width: 30px; height: 30px; border: none; background: #00b900; color: white; border-radius: 5px; }
+        .qty { margin: 0 15px; font-weight: bold; width: 20px; text-align: center; }
+        .footer { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 20px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+        .submit-btn { background: #00b900; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h3>🛒 選擇商品</h3>
+        <div id="productList">載入中...</div>
+    </div>
+
+    <div class="footer">
+        <div style="display:flex; justify-content: space-between; margin-bottom: 10px;">
+            <span>總金額：</span>
+            <span style="color: #e44d26; font-weight: bold;">NT$ <span id="totalPrice">0</span></span>
+        </div>
+        <button class="submit-btn" onclick="submitOrder()">確認送出訂單</button>
+    </div>
+
+    <script>
+        // --- 這裡要填入你的資料 ---
+        const LIFF_ID = '2009084382-z4lJ5Lc6'; // 從 LINE Developers 取得
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbzKGODi14Oarp7xlYy_5tFTb1KAFQRbtaD2h7b1cgcVLKvVq_f0kxKMwgBW2wusFXDHgQ/exec'; // 從 Google 試算表部署取得
+        // -----------------------
+
+        let cart = {};
+        let products = [];
+
+        async function main() {
+            await liff.init({ liffId: LIFF_ID });
+            if (!liff.isLoggedIn()) { liff.login(); return; }
+            
+            // 向 GAS 抓取商品清單
+            const response = await fetch(GAS_URL);
+            products = await response.json();
+            
+            renderProducts();
+        }
+
+        function renderProducts() {
+            const list = document.getElementById('productList');
+            list.innerHTML = products.map(p => `
+                <div class="product-item">
+                    <span>${p.name} ($${p.price})</span>
+                    <div class="btn-group">
+                        <button onclick="changeQty('${p.name}', -1)">-</button>
+                        <span class="qty" id="qty-${p.name}">0</span>
+                        <button onclick="changeQty('${p.name}', 1)">+</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function changeQty(name, delta) {
+            cart[name] = (cart[name] || 0) + delta;
+            if (cart[name] < 0) cart[name] = 0;
+            document.getElementById(`qty-${name}`).innerText = cart[name];
+            
+            let total = 0;
+            products.forEach(p => {
+                if(cart[p.name]) total += p.price * cart[p.name];
+            });
+            document.getElementById('totalPrice').innerText = total;
+        }
+
+        async function submitOrder() {
+            const total = document.getElementById('totalPrice').innerText;
+            if (total === "0") return alert("尚未選擇商品");
+
+            const profile = await liff.getProfile();
+            let details = Object.entries(cart)
+                .filter(([_, qty]) => qty > 0)
+                .map(([name, qty]) => `${name} x${qty}`)
+                .join(', ');
+
+            // 送資料去 Google 試算表 (POST)
+            await fetch(GAS_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    userName: profile.displayName,
+                    details: details,
+                    totalPrice: total
+                })
+            });
+
+            // 在 LINE 聊天室發送訊息
+            await liff.sendMessages([{
+                type: 'text',
+                text: `✅ 訂單已完成！\n購買明細：${details}\n總金額：$${total}`
+            }]);
+
+            liff.closeWindow();
+        }
+
+        main();
+    </script>
+</body>
+</html>
