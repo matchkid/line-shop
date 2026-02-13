@@ -3,110 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIFF 免費結單系統</title>
+    <title>喜幼點單系統</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        body { font-family: -apple-system, sans-serif; background: #f4f4f4; padding: 15px; }
-        .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .product-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0; }
-        .btn-group { display: flex; align-items: center; }
-        .btn-group button { width: 30px; height: 30px; border: none; background: #00b900; color: white; border-radius: 5px; }
-        .qty { margin: 0 15px; font-weight: bold; width: 20px; text-align: center; }
-        .footer { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 20px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
-        .submit-btn { background: #00b900; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: bold; }
+        /* 基礎樣式 */
+        body { font-family: sans-serif; background: #f8f9fa; margin: 0; padding-bottom: 80px; }
+        .nav-bar { background: #00b900; color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 10; }
+        .container { padding: 15px; }
+        .product-card { background: white; border-radius: 10px; padding: 10px; margin-bottom: 10px; display: flex; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .product-img { width: 70px; height: 70px; border-radius: 8px; object-fit: cover; margin-right: 15px; background: #eee; }
+        .controls { margin-left: auto; display: flex; align-items: center; }
+        .btn-qty { width: 30px; height: 30px; border: none; background: #00b900; color: white; border-radius: 5px; }
+        .qty { margin: 0 10px; font-weight: bold; width: 20px; text-align: center; }
+        .pagination { display: flex; justify-content: center; align-items: center; margin-top: 20px; gap: 15px; }
+        .btn-page { padding: 8px 15px; background: #666; color: white; border: none; border-radius: 5px; }
+        .footer { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px; border-top: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
+        .btn-submit { background: #00b900; color: white; border: none; padding: 10px 25px; border-radius: 20px; font-size: 16px; }
+        .hidden { display: none; }
+        .history-item { background: white; padding: 10px; margin-bottom: 10px; border-radius: 8px; font-size: 14px; border-left: 4px solid #00b900; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h3>🛒 選擇商品</h3>
+<div class="nav-bar" id="viewTitle">商品列表</div>
+
+<div class="container">
+    <div id="shopView">
         <div id="productList">載入中...</div>
-    </div>
-
-    <div class="footer">
-        <div style="display:flex; justify-content: space-between; margin-bottom: 10px;">
-            <span>總金額：</span>
-            <span style="color: #e44d26; font-weight: bold;">NT$ <span id="totalPrice">0</span></span>
+        <div class="pagination" id="pageControls">
+            <button class="btn-page" onclick="changePage(-1)">上一頁</button>
+            <span id="pageInfo">第 1 頁</span>
+            <button class="btn-page" onclick="changePage(1)">下一頁</button>
         </div>
-        <button class="submit-btn" onclick="submitOrder()">確認送出訂單</button>
     </div>
 
-    <script>
-        // --- 這裡要填入你的資料 ---
-        const LIFF_ID = '2009084382-z4lJ5Lc6'; // 從 LINE Developers 取得
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbzKGODi14Oarp7xlYy_5tFTb1KAFQRbtaD2h7b1cgcVLKvVq_f0kxKMwgBW2wusFXDHgQ/exec'; // 從 Google 試算表部署取得
-        // -----------------------
+    <div id="historyView" class="hidden">
+        <div id="historyList">尚無歷史紀錄</div>
+        <center><button onclick="window.location.href='?'" style="margin-top:20px; padding:10px;">回到商店</button></center>
+    </div>
+</div>
 
-        let cart = {};
-        let products = [];
+<div class="footer" id="cartFooter">
+    <div>總計: $<span id="totalAmount">0</span></div>
+    <button class="btn-submit" onclick="submitOrder()">確認結帳</button>
+</div>
 
-        async function main() {
-            await liff.init({ liffId: LIFF_ID });
-            if (!liff.isLoggedIn()) { liff.login(); return; }
-            
-            // 向 GAS 抓取商品清單
-            const response = await fetch(GAS_URL);
-            products = await response.json();
-            
-            renderProducts();
+<script>
+    const LIFF_ID = '2009084382-z4lJ5Lc6'; // ⚠️ 請更換
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbyKAN46V-_VD40pg29b6cma2EQusfpA4oTu7LJzMZnnIv_pdrPTZhCMM-R0Tuli2ABRHw/exec'; // ⚠️ 請更換
+    
+    let allProducts = [];
+    let cart = {};
+    let currentPage = 1;
+    const pageSize = 6; 
+    let currentCategory = new URLSearchParams(window.location.search).get('cat');
+    let viewMode = new URLSearchParams(window.location.search).get('view');
+
+    async function init() {
+        await liff.init({ liffId: LIFF_ID });
+        if (!liff.isLoggedIn()) { liff.login(); return; }
+
+        if (viewMode === 'history') {
+            showHistoryView();
+        } else {
+            fetchProducts();
         }
+    }
 
-        function renderProducts() {
-            const list = document.getElementById('productList');
-            list.innerHTML = products.map(p => `
-                <div class="product-item">
-                    <span>${p.name} ($${p.price})</span>
-                    <div class="btn-group">
-                        <button onclick="changeQty('${p.name}', -1)">-</button>
-                        <span class="qty" id="qty-${p.name}">0</span>
-                        <button onclick="changeQty('${p.name}', 1)">+</button>
-                    </div>
+    async function fetchProducts() {
+        const res = await fetch(GAS_URL);
+        const data = await res.json();
+        // 篩選分類 (如果有)
+        allProducts = currentCategory ? data.filter(p => p.category === currentCategory) : data;
+        renderShop();
+    }
+
+    function renderShop() {
+        const start = (currentPage - 1) * pageSize;
+        const end = start + pageSize;
+        const displayList = allProducts.slice(start, end);
+
+        const listDiv = document.getElementById('productList');
+        listDiv.innerHTML = displayList.map(p => `
+            <div class="product-card">
+                <img class="product-img" src="${p.img || ''}">
+                <div><strong>${p.name}</strong><br><small>$${p.price}</small></div>
+                <div class="controls">
+                    <button class="btn-qty" onclick="updateCart('${p.name}', ${p.price}, -1)">-</button>
+                    <span class="qty">${cart[p.name] || 0}</span>
+                    <button class="btn-qty" onclick="updateCart('${p.name}', ${p.price}, 1)">+</button>
                 </div>
-            `).join('');
+            </div>
+        `).join('');
+
+        document.getElementById('pageInfo').innerText = `第 ${currentPage} 頁`;
+    }
+
+    function changePage(delta) {
+        if (currentPage + delta < 1) return;
+        if ((currentPage + delta - 1) * pageSize >= allProducts.length) return;
+        currentPage += delta;
+        renderShop();
+        window.scrollTo(0,0);
+    }
+
+    function updateCart(name, price, delta) {
+        cart[name] = (cart[name] || 0) + delta;
+        if (cart[name] < 0) cart[name] = 0;
+        calculateTotal();
+        renderShop(); // 重新整理顯示數量
+    }
+
+    function calculateTotal() {
+        let total = 0;
+        // 這裡需要根據 allProducts 查找價格，簡易示範
+        for(let name in cart) {
+            let p = allProducts.find(x => x.name === name);
+            if(p) total += p.price * cart[name];
         }
+        document.getElementById('totalAmount').innerText = total;
+    }
 
-        function changeQty(name, delta) {
-            cart[name] = (cart[name] || 0) + delta;
-            if (cart[name] < 0) cart[name] = 0;
-            document.getElementById(`qty-${name}`).innerText = cart[name];
-            
-            let total = 0;
-            products.forEach(p => {
-                if(cart[p.name]) total += p.price * cart[p.name];
-            });
-            document.getElementById('totalPrice').innerText = total;
-        }
+    async function submitOrder() {
+        if (document.getElementById('totalAmount').innerText === "0") return alert("購物車是空的");
+        const profile = await liff.getProfile();
+        const userId = profile.userId; // 這是 LINE 官方提供的唯一精準 ID
+        let details = Object.entries(cart).filter(x => x[1] > 0).map(x => `${x[0]} x${x[1]}`).join(', ');
+        
+        await fetch(GAS_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                userId: userId, // 傳送精準 ID
+                userName: profile.displayName,
+                details: details,
+                totalPrice: document.getElementById('totalAmount').innerText
+            })
+        });
 
-        async function submitOrder() {
-            const total = document.getElementById('totalPrice').innerText;
-            if (total === "0") return alert("尚未選擇商品");
+        await liff.sendMessages([{ type: 'text', text: `📦 訂單已送出！\n明細：${details}\n總計：$${document.getElementById('totalAmount').innerText}` }]);
+        liff.closeWindow();
+    }
 
-            const profile = await liff.getProfile();
-            let details = Object.entries(cart)
-                .filter(([_, qty]) => qty > 0)
-                .map(([name, qty]) => `${name} x${qty}`)
-                .join(', ');
+    async function showHistoryView() {
+        document.getElementById('viewTitle').innerText = "歷史訂單";
+        document.getElementById('shopView').classList.add('hidden');
+        document.getElementById('cartFooter').classList.add('hidden');
+        document.getElementById('historyView').classList.remove('hidden');
 
-            // 送資料去 Google 試算表 (POST)
-            await fetch(GAS_URL, {
-                method: 'POST',
-                body: JSON.stringify({
-                    userName: profile.displayName,
-                    details: details,
-                    totalPrice: total
-                })
-            });
+        const profile = await liff.getProfile();
+        const userId = profile.userId; // 用這個查最精準，不怕同名同姓
+        const res = await fetch(`${GAS_URL}?action=getHistory&userName=${encodeURIComponent(profile.displayName)}`);
+        const history = await res.json();
+        
+        document.getElementById('historyList').innerHTML = history.map(h => `
+            <div class="history-item">
+                <strong>日期：${h.date}</strong><br>
+                明細：${h.details}<br>
+                金額：$${h.total}
+            </div>
+        `).join('');
+    }
 
-            // 在 LINE 聊天室發送訊息
-            await liff.sendMessages([{
-                type: 'text',
-                text: `✅ 訂單已完成！\n購買明細：${details}\n總金額：$${total}`
-            }]);
-
-            liff.closeWindow();
-        }
-
-        main();
-    </script>
+    init();
+</script>
 </body>
 </html>
