@@ -3,187 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>喜幼 微型商城系統</title>
+    <title>專業微商城 2.0</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        /* 1. 字體縮小與整體風格調優 */
-        :root { --line-green: #06C755; --bg-gray: #f4f4f4; --text-main: #333; --text-sub: #888; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg-gray); margin: 0; color: var(--text-main); font-size: 14px; }
+        :root { --line-green: #06C755; --bg: #f4f7f6; }
+        body { font-family: -apple-system, "Helvetica Neue", sans-serif; background: var(--bg); margin: 0; font-size: 14px; color: #333; }
         
-        /* 導覽列 */
-        .header { background: #fff; padding: 10px; text-align: center; font-weight: bold; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 100; font-size: 15px; }
+        /* 註冊遮罩 */
+        #regModal { position: fixed; inset: 0; background: white; z-index: 9999; display: none; padding: 40px 25px; }
+        .reg-input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
 
-        /* 商品卡片：字體更小更精緻 */
+        /* 頂部導航 */
+        .header { background: #fff; padding: 12px; text-align: center; font-weight: bold; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; }
+        .back-btn { color: var(--line-green); font-size: 14px; cursor: pointer; visibility: hidden; }
+
+        /* 分類按鈕 */
+        .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
+        .cat-card { background: white; padding: 25px 10px; border-radius: 15px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.05); font-weight: bold; font-size: 15px; }
+
+        /* 商品清單 */
         .container { padding: 10px; padding-bottom: 120px; }
-        .product-card { background: #fff; border-radius: 12px; padding: 10px; margin-bottom: 8px; display: flex; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .product-card { background: #fff; border-radius: 12px; padding: 10px; margin-bottom: 8px; display: flex; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
         .product-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; margin-right: 12px; }
-        .info b { font-size: 13px; display: block; margin-bottom: 4px; }
-        .info span { color: #e44d26; font-weight: bold; font-size: 12px; }
+        .info b { font-size: 13px; display: inline-block; }
+        .product-note { font-style: italic; color: #999; font-size: 11px; margin-left: 5px; }
+        
+        /* 分頁控制項 */
+        .pager { text-align: center; padding: 20px; font-size: 12px; color: #888; border-top: 1px solid #eee; }
+        .pager select { margin-left: 8px; padding: 4px; border-radius: 5px; border: 1px solid #ccc; background: #fff; }
 
-        /* 數量按鈕 */
-        .controls { margin-left: auto; display: flex; align-items: center; background: #f0f0f0; border-radius: 20px; padding: 2px; }
-        .btn-qty { width: 24px; height: 24px; border: none; background: #fff; border-radius: 50%; cursor: pointer; font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .qty { min-width: 25px; text-align: center; font-size: 12px; font-weight: bold; }
-
-        /* 模仿 Linote 的固定底欄 */
-        .linote-footer { 
-            position: fixed; bottom: 15px; left: 15px; right: 15px; 
-            background: #333; color: #fff; border-radius: 30px; 
-            padding: 10px 20px; display: flex; justify-content: space-between; 
-            align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            z-index: 1000; transition: transform 0.3s;
-        }
-        .cart-info { font-size: 12px; }
-        .cart-info b { font-size: 16px; color: var(--line-green); }
-        .btn-cart { background: var(--line-green); color: white; border: none; padding: 8px 18px; border-radius: 20px; font-weight: bold; font-size: 13px; }
-
-        /* 購物車彈出視窗 (Modal) */
-        #cartModal { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.5); display: none; z-index: 2000; 
-            justify-content: center; align-items: flex-end;
-        }
-        .modal-content { 
-            background: #fff; width: 100%; border-radius: 20px 20px 0 0; 
-            padding: 20px; max-height: 70%; overflow-y: auto; 
-        }
-        .modal-title { font-size: 16px; font-weight: bold; margin-bottom: 15px; text-align: center; }
-        .modal-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 13px; }
+        /* 購物車底欄 (Linote 風格) */
+        .linote-footer { position: fixed; bottom: 15px; left: 15px; right: 15px; background: #333; color: #fff; border-radius: 30px; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 1000; transition: 0.3s; transform: translateY(120px); }
+        
+        /* 彈窗 */
+        #cartModal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; z-index: 2000; align-items: flex-end; }
+        .modal-content { background: #fff; width: 100%; border-radius: 20px 20px 0 0; padding: 20px; max-height: 80%; overflow-y: auto; box-sizing: border-box; }
+        .btn-green { background: var(--line-green); color: white; border: none; padding: 12px; border-radius: 25px; font-weight: bold; width: 100%; font-size: 15px; margin-top: 15px; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-<div class="header" id="title">🛒 選購商品</div>
+<div id="regModal">
+    <h2 style="margin-top:0">👋 您好！</h2>
+    <p style="color:#666">首次使用請先登記聯絡資訊：</p>
+    <input type="text" id="regName" class="reg-input" placeholder="收件人姓名">
+    <input type="tel" id="regPhone" class="reg-input" placeholder="聯絡電話">
+    <button class="btn-green" onclick="registerUser()">開始購物</button>
+</div>
 
-<div class="container" id="productList">
+<div id="mainApp" class="hidden">
+    <div class="header">
+        <div id="backBtn" class="back-btn" onclick="showCategories()">❮ 返回</div>
+        <div id="title">商品分類</div>
+        <div style="width:40px"></div>
     </div>
 
-<div style="text-align:center; padding-bottom: 100px;">
-    <button onclick="changePage(-1)" style="font-size:12px; padding:5px 10px;">上一頁</button>
-    <span id="pageInfo" style="font-size:12px; margin: 0 10px;">第 1 頁</span>
-    <button onclick="changePage(1)" style="font-size:12px; padding:5px 10px;">下一頁</button>
-</div>
+    <div id="categoryView" class="cat-grid"></div>
 
-<div class="linote-footer" id="footerBar">
-    <div class="cart-info">已選 <span id="cartCount">0</span> 件，共 <b>$<span id="cartTotal">0</span></b></div>
-    <button class="btn-cart" onclick="openCart()">查看清單</button>
-</div>
-
-<div id="cartModal" onclick="closeCart(event)">
-    <div class="modal-content" onclick="event.stopPropagation()">
-        <div class="modal-title">確認訂單明細</div>
-        <div id="cartDetails"></div>
-        <div style="margin-top:20px; text-align: center;">
-            <button class="btn-cart" style="width:100%; padding:12px;" onclick="finalSubmit()">確認結帳送出</button>
-            <p onclick="closeCart()" style="color:#888; font-size:12px; margin-top:15px;">返回修改</p>
+    <div id="shopView" class="hidden">
+        <div class="container" id="productList"></div>
+        <div class="pager">
+            <span id="pageText">第 1 頁 / 共 1 頁</span>
+            <select id="pageSelect" onchange="jumpPage(this.value)"></select>
         </div>
     </div>
 </div>
 
-<script>
-    const LIFF_ID = '2009084382-z4lJ5Lc6'; 
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbyBs1ypFFNnnKfBekSdRn6b5WJffkEp3n1FV7IljQ8VNXaL6wnnC-ujwVTPXHKfkwsE_w/exec';
+<div class="linote-footer" id="footerBar">
+    <div style="font-size:12px;">已選 <span id="cartCount">0</span> 件，共 <b>$<span id="cartTotal">0</span></b></div>
+    <button onclick="openCart()" style="background:var(--line-green); color:#fff; border:none; padding:6px 16px; border-radius:15px; font-weight:bold; font-size:13px;">確認結帳</button>
+</div>
 
-    let products = [];
-    let cart = {}; // 格式: { "品名": { qty: 1, price: 100 } }
-    let page = 1;
-    const size = 6;
+<div id="cartModal" onclick="this.style.display='none'">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h3 style="text-align:center; margin-top:0;">訂單明細確認</h3>
+        <div id="cartDetails"></div>
+        <button class="btn-green" onclick="finalSubmit()">送出訂單</button>
+    </div>
+</div>
+
+<script>
+    const LIFF_ID = '2009084382-z4lJ5Lc6'; // ⚠️ 改這裡
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbwtA2UqAFK34pBSEIEZJdXpwpdvUmwq9xUGQSrvzYzWoO6xxmDVApIocgvy31mCbnYHtQ/exec'; // ⚠️ 改這裡
+
+    let allData = [], filteredProducts = [], page = 1, size = 6;
+    let cart = JSON.parse(localStorage.getItem('shopCart')) || {};
 
     async function init() {
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { liff.login(); return; }
-        fetchData();
+        const profile = await liff.getProfile();
+        
+        // 1. 檢查註冊
+        const res = await fetch(`${GAS_URL}?action=checkUser&userId=${profile.userId}`);
+        const user = await res.json();
+        if (!user.registered) {
+            document.getElementById('regModal').style.display = 'block';
+        } else {
+            loadShopData();
+        }
+        updateFooter();
     }
 
-    async function fetchData() {
+    async function registerUser() {
+        const name = document.getElementById('regName').value;
+        const phone = document.getElementById('regPhone').value;
+        if(!name || !phone) return alert("請完整填寫");
+        const profile = await liff.getProfile();
+        await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action:'register', userId:profile.userId, userName:name, phone:phone }) });
+        document.getElementById('regModal').style.display = 'none';
+        loadShopData();
+    }
+
+    async function loadShopData() {
+        document.getElementById('mainApp').classList.remove('hidden');
         const res = await fetch(GAS_URL);
-        products = await res.json();
+        allData = await res.json();
+        showCategories();
+    }
+
+    function showCategories() {
+        document.getElementById('categoryView').classList.remove('hidden');
+        document.getElementById('shopView').classList.add('hidden');
+        document.getElementById('backBtn').style.visibility = 'hidden';
+        document.getElementById('title').innerText = "商品分類";
+
+        let cats = [];
+        allData.forEach(p => { if(p.category) cats = cats.concat(p.category.split('/')); });
+        const uniqueCats = [...new Set(cats.filter(c => c))];
+
+        document.getElementById('categoryView').innerHTML = uniqueCats.map(c => `
+            <div class="cat-card" onclick="showProducts('${c}')">${c}</div>
+        `).join('');
+    }
+
+    function showProducts(cat) {
+        document.getElementById('categoryView').classList.add('hidden');
+        document.getElementById('shopView').classList.remove('hidden');
+        document.getElementById('backBtn').style.visibility = 'visible';
+        document.getElementById('title').innerText = cat;
+        
+        filteredProducts = allData.filter(p => p.category && p.category.split('/').includes(cat));
+        page = 1;
         render();
     }
 
     function render() {
+        const totalPages = Math.ceil(filteredProducts.length / size) || 1;
         const start = (page - 1) * size;
-        const display = products.slice(start, start + size);
-        const list = document.getElementById('productList');
-        list.innerHTML = display.map(p => `
+        const displayItems = filteredProducts.slice(start, start + size);
+        
+        document.getElementById('productList').innerHTML = displayItems.map(p => `
             <div class="product-card">
                 <img class="product-img" src="${p.img || ''}">
                 <div class="info">
-                    <b>${p.name}</b>
-                    <span>$${p.price}</span>
+                    <b>${p.name}</b> <i class="product-note">${p.note || ''}</i><br>
+                    <span style="color:#e44d26; font-weight:bold;">$${p.price}</span>
                 </div>
-                <div class="controls">
-                    <button class="btn-qty" onclick="add('${p.name}', ${p.price}, -1)">-</button>
-                    <div class="qty" id="q-${p.name}">${cart[p.name]?.qty || 0}</div>
-                    <button class="btn-qty" onclick="add('${p.name}', ${p.price}, 1)">+</button>
+                <div style="margin-left:auto; display:flex; align-items:center; background:#f8f8f8; border-radius:20px; padding:2px;">
+                    <button onclick="add('${p.name}',${p.price},-1)" style="width:26px; height:26px; border-radius:50%; border:none; background:#fff;">-</button>
+                    <span style="width:25px; text-align:center; font-weight:bold; font-size:12px;" id="q-${p.name}">${cart[p.name]?.qty || 0}</span>
+                    <button onclick="add('${p.name}',${p.price},1)" style="width:26px; height:26px; border-radius:50%; border:none; background:var(--line-green); color:#fff;">+</button>
                 </div>
             </div>
         `).join('');
-        document.getElementById('pageInfo').innerText = `第 ${page} 頁`;
+
+        document.getElementById('pageText').innerText = `第 ${page} 頁 / 共 ${totalPages} 頁`;
+        let opt = '';
+        for(let i=1; i<=totalPages; i++) opt += `<option value="${i}" ${i===page?'selected':''}>跳至第 ${i} 頁</option>`;
+        document.getElementById('pageSelect').innerHTML = opt;
     }
 
-    function add(name, price, delta) {
-        if (!cart[name]) cart[name] = { qty: 0, price: price };
-        cart[name].qty += delta;
-        if (cart[name].qty <= 0) delete cart[name];
-        
+    function add(name, price, d) {
+        if(!cart[name]) cart[name] = { qty: 0, price: price };
+        cart[name].qty += d;
+        if(cart[name].qty <= 0) delete cart[name];
+        localStorage.setItem('shopCart', JSON.stringify(cart));
+        if(document.getElementById(`q-${name}`)) document.getElementById(`q-${name}`).innerText = cart[name]?.qty || 0;
         updateFooter();
-        render(); // 刷新當前頁面數字
     }
 
     function updateFooter() {
         let total = 0, count = 0;
-        for (let key in cart) {
-            total += cart[key].qty * cart[key].price;
-            count += cart[key].qty;
-        }
+        for(let k in cart) { total += cart[k].qty * cart[k].price; count += cart[k].qty; }
         document.getElementById('cartTotal').innerText = total;
         document.getElementById('cartCount').innerText = count;
-        // 如果購物車是空的，隱藏底欄
-        document.getElementById('footerBar').style.transform = count > 0 ? "translateY(0)" : "translateY(100px)";
+        document.getElementById('footerBar').style.transform = count > 0 ? "translateY(0)" : "translateY(120px)";
     }
 
     function openCart() {
-        const details = document.getElementById('cartDetails');
-        let html = '';
-        for (let key in cart) {
-            html += `<div class="modal-item"><span>${key} x ${cart[key].qty}</span><span>$${cart[key].qty * cart[key].price}</span></div>`;
-        }
-        details.innerHTML = html + `<div class="modal-item" style="font-weight:bold; border:none; font-size:15px;"><span>總計</span><span>$${document.getElementById('cartTotal').innerText}</span></div>`;
+        let h = '';
+        for(let k in cart) h += `<div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee; font-size:13px;"><span>${k} x ${cart[k].qty}</span><span>$${cart[k].qty*cart[k].price}</span></div>`;
+        document.getElementById('cartDetails').innerHTML = h + `<div style="text-align:right; font-weight:bold; padding:10px 0;">總金額：$${document.getElementById('cartTotal').innerText}</div>`;
         document.getElementById('cartModal').style.display = 'flex';
     }
 
-    function closeCart() { document.getElementById('cartModal').style.display = 'none'; }
-
     async function finalSubmit() {
         const profile = await liff.getProfile();
-        const items = Object.entries(cart).map(([name, obj]) => `${name}x${obj.qty}`).join(', ');
-        const total = document.getElementById('cartTotal').innerText;
-
-        await fetch(GAS_URL, {
-            method: 'POST',
-            body: JSON.stringify({
-                userId: profile.userId,
-                userName: profile.displayName,
-                details: items,
-                totalPrice: total
-            })
-        });
-
-        await liff.sendMessages([{ type: 'text', text: `✅ 訂單已確認！\n項目：${items}\n金額：$${total}` }]);
+        const details = Object.entries(cart).map(([n,o]) => `${n}x${o.qty}`).join(', ');
+        await fetch(GAS_URL, { method:'POST', body:JSON.stringify({ userId:profile.userId, userName:profile.displayName, details:details, totalPrice:document.getElementById('cartTotal').innerText }) });
+        localStorage.removeItem('shopCart');
+        liff.sendMessages([{ type: 'text', text: `✅ 訂單已送出！\n項目：${details}\n總金額：$${document.getElementById('cartTotal').innerText}` }]);
         liff.closeWindow();
     }
 
-    function changePage(d) {
-        if (page + d < 1 || (page + d - 1) * size >= products.length) return;
-        page += d; render();
-    }
-
+    function jumpPage(p) { page = parseInt(p); render(); window.scrollTo(0,0); }
     init();
 </script>
 </body>
 </html>
-
-
-
-
