@@ -2,166 +2,181 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>喜幼點單系統</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>喜幼 微型商城</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        /* 基礎樣式 */
-        body { font-family: sans-serif; background: #f8f9fa; margin: 0; padding-bottom: 80px; }
-        .nav-bar { background: #00b900; color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 10; }
-        .container { padding: 15px; }
-        .product-card { background: white; border-radius: 10px; padding: 10px; margin-bottom: 10px; display: flex; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .product-img { width: 70px; height: 70px; border-radius: 8px; object-fit: cover; margin-right: 15px; background: #eee; }
-        .controls { margin-left: auto; display: flex; align-items: center; }
-        .btn-qty { width: 30px; height: 30px; border: none; background: #00b900; color: white; border-radius: 5px; }
-        .qty { margin: 0 10px; font-weight: bold; width: 20px; text-align: center; }
-        .pagination { display: flex; justify-content: center; align-items: center; margin-top: 20px; gap: 15px; }
-        .btn-page { padding: 8px 15px; background: #666; color: white; border: none; border-radius: 5px; }
-        .footer { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px; border-top: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
-        .btn-submit { background: #00b900; color: white; border: none; padding: 10px 25px; border-radius: 20px; font-size: 16px; }
-        .hidden { display: none; }
-        .history-item { background: white; padding: 10px; margin-bottom: 10px; border-radius: 8px; font-size: 14px; border-left: 4px solid #00b900; }
+        /* 1. 字體縮小與整體風格調優 */
+        :root { --line-green: #06C755; --bg-gray: #f4f4f4; --text-main: #333; --text-sub: #888; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg-gray); margin: 0; color: var(--text-main); font-size: 14px; }
+        
+        /* 導覽列 */
+        .header { background: #fff; padding: 10px; text-align: center; font-weight: bold; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 100; font-size: 15px; }
+
+        /* 商品卡片：字體更小更精緻 */
+        .container { padding: 10px; padding-bottom: 120px; }
+        .product-card { background: #fff; border-radius: 12px; padding: 10px; margin-bottom: 8px; display: flex; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .product-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; margin-right: 12px; }
+        .info b { font-size: 13px; display: block; margin-bottom: 4px; }
+        .info span { color: #e44d26; font-weight: bold; font-size: 12px; }
+
+        /* 數量按鈕 */
+        .controls { margin-left: auto; display: flex; align-items: center; background: #f0f0f0; border-radius: 20px; padding: 2px; }
+        .btn-qty { width: 24px; height: 24px; border: none; background: #fff; border-radius: 50%; cursor: pointer; font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .qty { min-width: 25px; text-align: center; font-size: 12px; font-weight: bold; }
+
+        /* 模仿 Linote 的固定底欄 */
+        .linote-footer { 
+            position: fixed; bottom: 15px; left: 15px; right: 15px; 
+            background: #333; color: #fff; border-radius: 30px; 
+            padding: 10px 20px; display: flex; justify-content: space-between; 
+            align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 1000; transition: transform 0.3s;
+        }
+        .cart-info { font-size: 12px; }
+        .cart-info b { font-size: 16px; color: var(--line-green); }
+        .btn-cart { background: var(--line-green); color: white; border: none; padding: 8px 18px; border-radius: 20px; font-weight: bold; font-size: 13px; }
+
+        /* 購物車彈出視窗 (Modal) */
+        #cartModal { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.5); display: none; z-index: 2000; 
+            justify-content: center; align-items: flex-end;
+        }
+        .modal-content { 
+            background: #fff; width: 100%; border-radius: 20px 20px 0 0; 
+            padding: 20px; max-height: 70%; overflow-y: auto; 
+        }
+        .modal-title { font-size: 16px; font-weight: bold; margin-bottom: 15px; text-align: center; }
+        .modal-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 13px; }
     </style>
 </head>
 <body>
 
-<div class="nav-bar" id="viewTitle">商品列表</div>
+<div class="header" id="title">🛒 選購商品</div>
 
-<div class="container">
-    <div id="shopView">
-        <div id="productList">載入中...</div>
-        <div class="pagination" id="pageControls">
-            <button class="btn-page" onclick="changePage(-1)">上一頁</button>
-            <span id="pageInfo">第 1 頁</span>
-            <button class="btn-page" onclick="changePage(1)">下一頁</button>
-        </div>
+<div class="container" id="productList">
     </div>
 
-    <div id="historyView" class="hidden">
-        <div id="historyList">尚無歷史紀錄</div>
-        <center><button onclick="window.location.href='?'" style="margin-top:20px; padding:10px;">回到商店</button></center>
-    </div>
+<div style="text-align:center; padding-bottom: 100px;">
+    <button onclick="changePage(-1)" style="font-size:12px; padding:5px 10px;">上一頁</button>
+    <span id="pageInfo" style="font-size:12px; margin: 0 10px;">第 1 頁</span>
+    <button onclick="changePage(1)" style="font-size:12px; padding:5px 10px;">下一頁</button>
 </div>
 
-<div class="footer" id="cartFooter">
-    <div>總計: $<span id="totalAmount">0</span></div>
-    <button class="btn-submit" onclick="submitOrder()">確認結帳</button>
+<div class="linote-footer" id="footerBar">
+    <div class="cart-info">已選 <span id="cartCount">0</span> 件，共 <b>$<span id="cartTotal">0</span></b></div>
+    <button class="btn-cart" onclick="openCart()">查看清單</button>
+</div>
+
+<div id="cartModal" onclick="closeCart(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-title">確認訂單明細</div>
+        <div id="cartDetails"></div>
+        <div style="margin-top:20px; text-align: center;">
+            <button class="btn-cart" style="width:100%; padding:12px;" onclick="finalSubmit()">確認結帳送出</button>
+            <p onclick="closeCart()" style="color:#888; font-size:12px; margin-top:15px;">返回修改</p>
+        </div>
+    </div>
 </div>
 
 <script>
-    const LIFF_ID = '2009084382-z4lJ5Lc6'; // ⚠️ 請更換
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbyKAN46V-_VD40pg29b6cma2EQusfpA4oTu7LJzMZnnIv_pdrPTZhCMM-R0Tuli2ABRHw/exec'; // ⚠️ 請更換
-    
-    let allProducts = [];
-    let cart = {};
-    let currentPage = 1;
-    const pageSize = 6; 
-    let currentCategory = new URLSearchParams(window.location.search).get('cat');
-    let viewMode = new URLSearchParams(window.location.search).get('view');
+    const LIFF_ID = '你的_LIFF_ID'; 
+    const GAS_URL = '你的_GAS_網址';
+
+    let products = [];
+    let cart = {}; // 格式: { "品名": { qty: 1, price: 100 } }
+    let page = 1;
+    const size = 6;
 
     async function init() {
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { liff.login(); return; }
-
-        if (viewMode === 'history') {
-            showHistoryView();
-        } else {
-            fetchProducts();
-        }
+        fetchData();
     }
 
-    async function fetchProducts() {
+    async function fetchData() {
         const res = await fetch(GAS_URL);
-        const data = await res.json();
-        // 篩選分類 (如果有)
-        allProducts = currentCategory ? data.filter(p => p.category === currentCategory) : data;
-        renderShop();
+        products = await res.json();
+        render();
     }
 
-    function renderShop() {
-        const start = (currentPage - 1) * pageSize;
-        const end = start + pageSize;
-        const displayList = allProducts.slice(start, end);
-
-        const listDiv = document.getElementById('productList');
-        listDiv.innerHTML = displayList.map(p => `
+    function render() {
+        const start = (page - 1) * size;
+        const display = products.slice(start, start + size);
+        const list = document.getElementById('productList');
+        list.innerHTML = display.map(p => `
             <div class="product-card">
                 <img class="product-img" src="${p.img || ''}">
-                <div><strong>${p.name}</strong><br><small>$${p.price}</small></div>
+                <div class="info">
+                    <b>${p.name}</b>
+                    <span>$${p.price}</span>
+                </div>
                 <div class="controls">
-                    <button class="btn-qty" onclick="updateCart('${p.name}', ${p.price}, -1)">-</button>
-                    <span class="qty">${cart[p.name] || 0}</span>
-                    <button class="btn-qty" onclick="updateCart('${p.name}', ${p.price}, 1)">+</button>
+                    <button class="btn-qty" onclick="add('${p.name}', ${p.price}, -1)">-</button>
+                    <div class="qty" id="q-${p.name}">${cart[p.name]?.qty || 0}</div>
+                    <button class="btn-qty" onclick="add('${p.name}', ${p.price}, 1)">+</button>
                 </div>
             </div>
         `).join('');
-
-        document.getElementById('pageInfo').innerText = `第 ${currentPage} 頁`;
+        document.getElementById('pageInfo').innerText = `第 ${page} 頁`;
     }
 
-    function changePage(delta) {
-        if (currentPage + delta < 1) return;
-        if ((currentPage + delta - 1) * pageSize >= allProducts.length) return;
-        currentPage += delta;
-        renderShop();
-        window.scrollTo(0,0);
-    }
-
-    function updateCart(name, price, delta) {
-        cart[name] = (cart[name] || 0) + delta;
-        if (cart[name] < 0) cart[name] = 0;
-        calculateTotal();
-        renderShop(); // 重新整理顯示數量
-    }
-
-    function calculateTotal() {
-        let total = 0;
-        // 這裡需要根據 allProducts 查找價格，簡易示範
-        for(let name in cart) {
-            let p = allProducts.find(x => x.name === name);
-            if(p) total += p.price * cart[name];
-        }
-        document.getElementById('totalAmount').innerText = total;
-    }
-
-    async function submitOrder() {
-        if (document.getElementById('totalAmount').innerText === "0") return alert("購物車是空的");
-        const profile = await liff.getProfile();
-        const userId = profile.userId; // 這是 LINE 官方提供的唯一精準 ID
-        let details = Object.entries(cart).filter(x => x[1] > 0).map(x => `${x[0]} x${x[1]}`).join(', ');
+    function add(name, price, delta) {
+        if (!cart[name]) cart[name] = { qty: 0, price: price };
+        cart[name].qty += delta;
+        if (cart[name].qty <= 0) delete cart[name];
         
+        updateFooter();
+        render(); // 刷新當前頁面數字
+    }
+
+    function updateFooter() {
+        let total = 0, count = 0;
+        for (let key in cart) {
+            total += cart[key].qty * cart[key].price;
+            count += cart[key].qty;
+        }
+        document.getElementById('cartTotal').innerText = total;
+        document.getElementById('cartCount').innerText = count;
+        // 如果購物車是空的，隱藏底欄
+        document.getElementById('footerBar').style.transform = count > 0 ? "translateY(0)" : "translateY(100px)";
+    }
+
+    function openCart() {
+        const details = document.getElementById('cartDetails');
+        let html = '';
+        for (let key in cart) {
+            html += `<div class="modal-item"><span>${key} x ${cart[key].qty}</span><span>$${cart[key].qty * cart[key].price}</span></div>`;
+        }
+        details.innerHTML = html + `<div class="modal-item" style="font-weight:bold; border:none; font-size:15px;"><span>總計</span><span>$${document.getElementById('cartTotal').innerText}</span></div>`;
+        document.getElementById('cartModal').style.display = 'flex';
+    }
+
+    function closeCart() { document.getElementById('cartModal').style.display = 'none'; }
+
+    async function finalSubmit() {
+        const profile = await liff.getProfile();
+        const items = Object.entries(cart).map(([name, obj]) => `${name}x${obj.qty}`).join(', ');
+        const total = document.getElementById('cartTotal').innerText;
+
         await fetch(GAS_URL, {
             method: 'POST',
             body: JSON.stringify({
-                userId: userId, // 傳送精準 ID
+                userId: profile.userId,
                 userName: profile.displayName,
-                details: details,
-                totalPrice: document.getElementById('totalAmount').innerText
+                details: items,
+                totalPrice: total
             })
         });
 
-        await liff.sendMessages([{ type: 'text', text: `📦 訂單已送出！\n明細：${details}\n總計：$${document.getElementById('totalAmount').innerText}` }]);
+        await liff.sendMessages([{ type: 'text', text: `✅ 訂單已確認！\n項目：${items}\n金額：$${total}` }]);
         liff.closeWindow();
     }
 
-    async function showHistoryView() {
-        document.getElementById('viewTitle').innerText = "歷史訂單";
-        document.getElementById('shopView').classList.add('hidden');
-        document.getElementById('cartFooter').classList.add('hidden');
-        document.getElementById('historyView').classList.remove('hidden');
-
-        const profile = await liff.getProfile();
-        const userId = profile.userId; // 用這個查最精準，不怕同名同姓
-        const res = await fetch(`${GAS_URL}?action=getHistory&userName=${encodeURIComponent(profile.displayName)}`);
-        const history = await res.json();
-        
-        document.getElementById('historyList').innerHTML = history.map(h => `
-            <div class="history-item">
-                <strong>日期：${h.date}</strong><br>
-                明細：${h.details}<br>
-                金額：$${h.total}
-            </div>
-        `).join('');
+    function changePage(d) {
+        if (page + d < 1 || (page + d - 1) * size >= products.length) return;
+        page += d; render();
     }
 
     init();
