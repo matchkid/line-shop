@@ -63,7 +63,7 @@
     <div class="header">
         <div id="backBtn" class="nav-btn" onclick="showCategories()" style="visibility:hidden">🏠 首頁</div>
         <div id="title">商品分類</div>
-        <div id="historyBtn" class="nav-btn" onclick="showHistory()">📋 紀錄</div>
+        <div id="historyBtn" class="nav-btn" onclick="showHistory()">📋 訂單紀錄</div>
     </div>
 
     <div id="categoryView" class="cat-grid"></div>
@@ -215,7 +215,7 @@
         document.getElementById('shopView').classList.add('hidden');
         document.getElementById('historyView').classList.remove('hidden');
         document.getElementById('backBtn').style.visibility = 'visible';
-        document.getElementById('title').innerText = "歷史紀錄";
+        document.getElementById('title').innerText = "歷史訌單";
         
         const profile = await liff.getProfile();
         const res = await fetch(`${GAS_URL}?action=getHistory&userId=${profile.userId}`);
@@ -286,3 +286,4 @@
 </script>
 </body>
 </html>
+
