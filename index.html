@@ -17,60 +17,20 @@
         .header { background: #fff; padding: 12px; text-align: center; font-weight: bold; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; height: 50px; box-sizing: border-box; }
         .nav-btn { color: var(--line-green); font-size: 14px; cursor: pointer; min-width: 60px; }
 
-        /* 分類按鈕 單欄直列分類 */
-.cat-grid { 
-    display: grid; 
-    grid-template-columns: 1fr; /* 改為一排一個 */
-    gap: 12px; 
-    padding: 15px; 
-}
+        /* 分類按鈕 */
+        .cat-grid { display: grid; grid-template-columns: 1fr; gap: 12px; padding: 15px; }
+        .cat-card { background: white; padding: 18px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); font-weight: bold; font-size: 16px; color: #444; transition: background 0.2s; }
+        .cat-card:active { background: #f0f0f0; }
+        .cat-card::after { content: "❯"; color: var(--line-green); font-size: 12px; }
 
-.cat-card { 
-    background: white; 
-    padding: 18px 20px; /* 增加寬度感 */
-    border-radius: 12px; 
-    display: flex; /* 使用 Flex 排版 */
-    justify-content: space-between; /* 文字靠左，箭頭靠右 */
-    align-items: center; 
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06); 
-    font-weight: bold; 
-    font-size: 16px; 
-    color: #444;
-    transition: background 0.2s;
-}
-/* 訂單狀態標籤 */
-.status-badge {
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 10px;
-    float: right;
-    font-weight: normal;
-}
-.status-處理中 { background: #fff3cd; color: #856404; }
-.status-已出貨 { background: #d1ecf1; color: #0c5460; }
-.status-已完成 { background: #d4edda; color: #155724; }
+        /* 訂單狀態標籤 */
+        .status-badge { font-size: 11px; padding: 3px 8px; border-radius: 10px; font-weight: normal; }
+        .status-處理中 { background: #fff3cd; color: #856404; }
+        .status-已出貨 { background: #d1ecf1; color: #0c5460; }
+        .status-已完成 { background: #d4edda; color: #155724; }
 
-/* 商品名稱連結 */
-.product-name-link {
-    color: #333;
-    text-decoration: none; /* 移除下底線 */
-    display: inline-block;
-}
-.product-name-link:active {
-    color: var(--line-green); /* 點擊時變綠色 */
-}
-/* 點擊時的視覺回饋 */
-.cat-card:active {
-    background: #f0f0f0;
-}
-
-/* 在分類右側補一個小箭頭符號 */
-.cat-card::after {
-    content: "❯";
-    color: var(--line-green);
-    font-size: 12px;
-}        
-        /* 商品清單 */
+        /* 商品相關 */
+        .product-name-link { color: #333; text-decoration: none; display: inline-block; }
         .container { padding: 10px; padding-bottom: 120px; }
         .product-card { background: #fff; border-radius: 12px; padding: 10px; margin-bottom: 8px; display: flex; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
         .product-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; margin-right: 12px; }
@@ -78,22 +38,19 @@
         .info b { font-size: 13px; }
         .product-note { font-style: italic; color: #999; font-size: 11px; margin-left: 5px; }
         
-        /* 分頁控制項 */
-        .pager { text-align: center; padding: 20px; font-size: 12px; color: #888; border-top: 1px solid #eee; }
-        .pager select { margin-left: 8px; padding: 4px; border-radius: 5px; border: 1px solid #ccc; background: #fff; }
+        /* 歷史訂單直列顯示優化 */
+        .history-card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 1px 5px rgba(0,0,0,0.1); border-left: 5px solid var(--line-green); }
+        .history-item-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #eee; align-items: center; }
 
-        /* 購物車底欄 */
-        .linote-footer { position: fixed; bottom: 15px; left: 15px; right: 15px; background: #333; color: #fff; border-radius: 30px; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 1000; transition: 0.3s; transform: translateY(120px); }
-        
-        /* 歷史訂單樣式 */
-        .history-card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .history-date { font-size: 11px; color: #999; margin-bottom: 5px; }
-        .history-total { text-align: right; font-weight: bold; color: #e44d26; margin-top: 8px; }
+        /* 購物車底欄修正 */
+        .linote-footer { position: fixed; bottom: 20px; left: 15px; right: 15px; background: #333; color: #fff; border-radius: 30px; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 1000; transition: 0.3s; transform: translateY(150px); }
+        .footer-show { transform: translateY(0); }
 
-        /* 彈窗 */
+        /* 彈窗與複製按鈕 */
         #cartModal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; z-index: 2000; align-items: flex-end; }
-        .modal-content { background: #fff; width: 100%; border-radius: 20px 20px 0 0; padding: 20px; max-height: 80%; overflow-y: auto; box-sizing: border-box; }
-        .btn-green { background: var(--line-green); color: white; border: none; padding: 12px; border-radius: 25px; font-weight: bold; width: 100%; font-size: 15px; margin-top: 15px; cursor: pointer; }
+        .modal-content { background: #fff; width: 100%; border-radius: 20px 20px 0 0; padding: 20px; max-height: 85%; overflow-y: auto; box-sizing: border-box; }
+        .copy-btn { background: #f0f0f0; border: 1px solid #ccc; padding: 5px 10px; border-radius: 5px; font-size: 12px; cursor: pointer; margin-top: 5px; }
+        .btn-green { background: var(--line-green); color: white; border: none; padding: 12px; border-radius: 25px; font-weight: bold; width: 100%; font-size: 15px; margin-top: 15px; }
         .hidden { display: none; }
     </style>
 </head>
@@ -119,7 +76,7 @@
 
     <div id="shopView" class="hidden">
         <div class="container" id="productList"></div>
-        <div class="pager">
+        <div class="pager" id="pagerControl">
             <span id="pageText">第 1 頁 / 共 1 頁</span>
             <select id="pageSelect" onchange="jumpPage(this.value)"></select>
         </div>
@@ -137,21 +94,22 @@
 
 <div id="cartModal" onclick="this.style.display='none'">
     <div class="modal-content" onclick="event.stopPropagation()">
-        <h3 style="text-align:center; margin-top:0;">訂單明細確認</h3>
+        <h3 style="text-align:center; margin-top:0;">🛒 訂單明細確認</h3>
         <div id="cartDetails"></div>
-        <button class="btn-green" onclick="finalSubmit()">送出訂單</button>
+        <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+        <div style="background:#f9f9f9; padding:15px; border-radius:10px; font-size:13px;">
+            <p style="margin:5px 0;">🏦 匯款銀行：(396) 街口支付</p>
+            <p style="margin:5px 0;">🔢 匯款帳號：903241863</p>
+            <button class="copy-btn" onclick="copyToClipboard('903241863')">📋 點我複製帳號</button>
+        </div>
+        <button class="btn-green" onclick="finalSubmit()">確認並送出訂單</button>
     </div>
-<div class="bank-info">
-  <p>匯款帳號：(396)903241863</p>
-  <button onclick="copyAccount('(822) 123-456789-012')">一鍵複製帳號</button>
-</div>
-    
 </div>
 
 <script>
     const LIFF_ID = '2009084382-z4lJ5Lc6'; // ⚠️ 請確認你的正確 ID
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbws10-dZwc0DZia470sKW60G-Ihw91VhNfNkF8O7F9X80-2rVzXJkWJNiL2_kYVhcxUQA/exec'; // ⚠️ 請替換為正確網址
-    let allData = [], filteredProducts = [], page = 1, size = 6;
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbwihD0A929OdhwnZ01DVUxadod-sBsmGrZ6ekQMh-ueh_NhkR2O5OFS-Pv8yypPaNSGuw/exec'; // ⚠️ 請替換為正確網址
+    let allData = [], filteredProducts = [], page = 1, size = 10;
     let cart = JSON.parse(localStorage.getItem('shopCart')) || {};
 
     async function init() {
@@ -160,61 +118,53 @@
             if (!liff.isLoggedIn()) { liff.login(); return; }
             const profile = await liff.getProfile();
 
-            // 1. 檢查註冊狀態
             const checkRes = await fetch(`${GAS_URL}?action=checkUser&userId=${profile.userId}`);
             const userStatus = await checkRes.json();
             
             if (!userStatus.registered) {
                 document.getElementById('regModal').style.display = 'block';
-                return; // 停止往下跑，等待註冊
+                return;
             }
 
-            // 2. 載入商品資料
             const res = await fetch(GAS_URL);
             allData = await res.json();
 
-            // 3. 處理網址跳轉邏輯
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('page') === 'history') {
                 showHistory();
             } else {
-                loadShopData();
+                showCategories();
             }
-            updateFooter();
+            document.getElementById('mainApp').classList.remove('hidden');
+            updateFooter(); // 初始化後立即更新一次購物車顯示
         } catch (err) {
             alert("初始化失敗: " + err);
         }
     }
 
+    // 註冊功能
     async function registerUser() {
         const name = document.getElementById('regName').value;
         const phone = document.getElementById('regPhone').value;
         const address = document.getElementById('regAddress').value;
         if(!name || !phone || !address) return alert("請完整填寫");
-        
         const profile = await liff.getProfile();
         const res = await fetch(GAS_URL, { 
             method: 'POST', 
             body: JSON.stringify({ action:'register', userId:profile.userId, userName:name, phone:phone, address:address }) 
         });
-        
         const result = await res.json();
         if(result.status === 'success') {
             document.getElementById('regModal').style.display = 'none';
-            init(); // 重新跑一次初始化
+            location.reload(); 
         }
     }
 
-    function loadShopData() {
-        document.getElementById('mainApp').classList.remove('hidden');
-        document.getElementById('historyView').classList.add('hidden');
-        showCategories();
-    }
-
+    // 顯示分類頁面
     function showCategories() {
         document.getElementById('categoryView').classList.remove('hidden');
         document.getElementById('shopView').classList.add('hidden');
-        document.getElementById('historyView').classList.add('hidden'); // 👈 確保關閉歷史紀錄
+        document.getElementById('historyView').classList.add('hidden');
         document.getElementById('backBtn').style.visibility = 'hidden';
         document.getElementById('title').innerText = "商品分類";
 
@@ -223,13 +173,14 @@
         const uniqueCats = [...new Set(cats.filter(c => c))];
 
         document.getElementById('categoryView').innerHTML = uniqueCats.map(c => `
-            <div class="cat-card" onclick="showProducts('${c}')">${c}</div>
+            <div class="cat-card" onclick="showProducts('${c}')"><span>${c}</span></div>
         `).join('');
     }
 
+    // 顯示商品頁面
     function showProducts(cat) {
         document.getElementById('categoryView').classList.add('hidden');
-        document.getElementById('historyView').classList.add('hidden'); // 👈 確保關閉歷史紀錄
+        document.getElementById('historyView').classList.add('hidden');
         document.getElementById('shopView').classList.remove('hidden');
         document.getElementById('backBtn').style.visibility = 'visible';
         document.getElementById('title').innerText = cat;
@@ -239,6 +190,7 @@
         render();
     }
 
+    // 繪製商品列表
     function render() {
         const totalPages = Math.ceil(filteredProducts.length / size) || 1;
         const start = (page - 1) * size;
@@ -248,17 +200,17 @@
             <div class="product-card">
                 <img class="product-img" src="${p.img || ''}">
                 <div class="info">
-    <a href="${p.link || '#'}" target="_blank" class="product-name-link">
-        <b>${p.name}</b>
-        <span style="display:inline-block; width:14px; height:14px; border:1px solid #06C755; color:#06C755; border-radius:50%; text-align:center; line-height:12px; font-size:10px; margin-left:3px; vertical-align:middle;">i</span>
-    </a>
-    <i class="product-note">${p.note || ''}</i><br>
-    <span style="color:#e44d26; font-weight:bold;">$${p.price}</span>
-</div>
+                    <a href="${p.link || '#'}" target="_blank" class="product-name-link">
+                        <b>${p.name}</b>
+                        <span style="display:inline-block; width:14px; height:14px; border:1px solid var(--line-green); color:var(--line-green); border-radius:50%; text-align:center; line-height:12px; font-size:10px; margin-left:3px; vertical-align:middle;">i</span>
+                    </a><br>
+                    <i class="product-note">${p.note || ''}</i><br>
+                    <span style="color:#e44d26; font-weight:bold;">$${p.price}</span>
+                </div>
                 <div style="display:flex; align-items:center; background:#f8f8f8; border-radius:20px; padding:2px;">
-                    <button onclick="add('${p.name}',${p.price},-1)" style="width:26px; height:26px; border-radius:50%; border:none; background:#fff;">-</button>
-                    <span style="width:25px; text-align:center; font-weight:bold; font-size:12px;" id="q-${p.name}">${cart[p.name]?.qty || 0}</span>
-                    <button onclick="add('${p.name}',${p.price},1)" style="width:26px; height:26px; border-radius:50%; border:none; background:var(--line-green); color:#fff;">+</button>
+                    <button onclick="add('${p.name}',${p.price},-1)" style="width:28px; height:28px; border-radius:50%; border:none; background:#fff;">-</button>
+                    <span style="width:30px; text-align:center; font-weight:bold;" id="q-${p.name}">${cart[p.name]?.qty || 0}</span>
+                    <button onclick="add('${p.name}',${p.price},1)" style="width:28px; height:28px; border-radius:50%; border:none; background:var(--line-green); color:#fff;">+</button>
                 </div>
             </div>
         `).join('');
@@ -269,34 +221,44 @@
         document.getElementById('pageSelect').innerHTML = opt;
     }
 
+    // 歷史紀錄 - 修改為直列顯示
     async function showHistory() {
-        document.getElementById('mainApp').classList.remove('hidden');
         document.getElementById('categoryView').classList.add('hidden');
         document.getElementById('shopView').classList.add('hidden');
         document.getElementById('historyView').classList.remove('hidden');
         document.getElementById('backBtn').style.visibility = 'visible';
-        document.getElementById('title').innerText = "歷史訌單";
-        // 清除舊資料，顯示讀取中
+        document.getElementById('title').innerText = "歷史訂單紀錄";
         document.getElementById('historyList').innerHTML = '<div style="text-align:center; padding:20px; color:#888;">正在讀取訂單...</div>';
-        const profile = await liff.getProfile();
-        const res = await fetch(`${GAS_URL}?action=getHistory&userId=${profile.userId}`);
-        const history = await res.json();
         
-        if (history.length === 0) {
-            document.getElementById('historyList').innerText = "尚無訂單紀錄。";
-            return;
-        }
+        try {
+            const profile = await liff.getProfile();
+            const res = await fetch(`${GAS_URL}?action=getHistory&userId=${profile.userId}`);
+            const history = await res.json(); // ⚠️ 注意：這裡的 GAS 回傳需對應「直列結構」
+            
+            if (!history || history.length === 0) {
+                document.getElementById('historyList').innerText = "尚無訂單紀錄。";
+                return;
+            }
 
-        document.getElementById('historyList').innerHTML = history.map(h => `
-            <div class="history-card">
-                <div class="history-date">${h.date}</div>
-                <div class="history-details">${h.details}</div>
-                <div class="history-total">總計：$${h.total}</div>
-                <span class="status-badge status-${h.status}">${h.status}</span>
-            </div>
-        `).join('');
+            // 此處假設 GAS 已處理為分組後的訂單陣列，若 GAS 尚未改寫，暫以現有欄位模擬直列
+            document.getElementById('historyList').innerHTML = history.map(h => `
+                <div class="history-card">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                        <span class="history-date">📅 ${h.date}</span>
+                        <span class="status-badge status-${h.status}">${h.status}</span>
+                    </div>
+                    <div style="background:#fcfcfc; padding:10px; border-radius:8px;">
+                        ${h.details.split(',').map(item => `<div class="history-item-row"><span>${item.trim()}</span></div>`).join('')}
+                    </div>
+                    <div class="history-total">總計(含運)：$${h.total}</div>
+                </div>
+            `).join('');
+        } catch (e) {
+            document.getElementById('historyList').innerText = "讀取失敗，請稍後再試。";
+        }
     }
 
+    // 加入購物車
     function add(name, price, d) {
         if(!cart[name]) cart[name] = { qty: 0, price: price };
         cart[name].qty += d;
@@ -307,67 +269,100 @@
         updateFooter();
     }
 
+    // 更新購物車底欄
     function updateFooter() {
-    let subtotal = 0, count = 0;
-    for(let k in cart) { subtotal += cart[k].qty * cart[k].price; count += cart[k].qty; }
-    
-    // 運費邏輯：滿 1000 免運，否則 60 元
-    let shipping = (subtotal >= 1000 || subtotal === 0) ? 0 : 60;
-    let total = subtotal + shipping;
+        let subtotal = 0, count = 0;
+        for(let k in cart) { subtotal += cart[k].qty * cart[k].price; count += cart[k].qty; }
+        
+        // 顯示或隱藏購物車 Bar
+        const footer = document.getElementById('footerBar');
+        if (count > 0) {
+            footer.classList.add('footer-show');
+        } else {
+            footer.classList.remove('footer-show');
+        }
 
-    document.getElementById('cartTotal').innerText = total;
-    document.getElementById('cartCount').innerText = count;
-    
-    // 如果想在畫面上提示還差多少免運
-    if (shipping > 0) {
-        console.log(`還差 $${1000 - subtotal} 即可免運！`);
+        // 運費邏輯：滿 8000 免運，否則 100 元
+        let shipping = (subtotal >= 8000 || subtotal === 0) ? 0 : 100;
+        document.getElementById('cartTotal').innerText = subtotal + shipping;
+        document.getElementById('cartCount').innerText = count;
     }
-}
 
+    // 打開確認視窗
     function openCart() {
-        let h = '';
-        for(let k in cart) h += `<div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;"><span>${k} x ${cart[k].qty}</span><span>$${cart[k].qty*cart[k].price}</span></div>`;
-        document.getElementById('cartDetails').innerHTML = h + `<div style="text-align:right; font-weight:bold; padding:10px 0;">總金額：$${document.getElementById('cartTotal').innerText}</div>`;
+        let subtotal = 0;
+        let h = '<div style="margin-bottom:15px;">';
+        for(let k in cart) {
+            let itemTotal = cart[k].qty * cart[k].price;
+            subtotal += itemTotal;
+            h += `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f0f0f0;">
+                    <span>${k} x ${cart[k].qty}</span>
+                    <span>$${itemTotal}</span>
+                  </div>`;
+        }
+        let shipping = (subtotal >= 1000) ? 0 : 60;
+        h += `</div>
+              <div style="text-align:right; font-size:13px; color:#666;">商品小計：$${subtotal}</div>
+              <div style="text-align:right; font-size:13px; color:#666;">運費：$${shipping}</div>
+              <div style="text-align:right; font-weight:bold; color:#e44d26; font-size:18px; margin-top:5px;">應付總額：$${subtotal + shipping}</div>`;
+        
+        document.getElementById('cartDetails').innerHTML = h;
         document.getElementById('cartModal').style.display = 'flex';
     }
 
-    async function finalSubmit() {
-        const profile = await liff.getProfile();
-        const details = Object.entries(cart).map(([n,o]) => `${n}x${o.qty}`).join(', ');
-        const total = document.getElementById('cartTotal').innerText;
+    // 複製帳號功能
+    function copyToClipboard(text) {
+        const el = document.createElement('textarea');
+        el.value = text;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        alert("匯款帳號已複製！\n(396) 903241863");
+    }
 
+    // 送出訂單
+    async function finalSubmit() {
+        try {
+            const profile = await liff.getProfile();
+            // 計算總金額與運費 (為了顯示給使用者看)
+        let subtotal = 0;
+        for(let k in cart) { subtotal += cart[k].qty * cart[k].price; }
+        let shipping = (subtotal >= 1000) ? 0 : 60;
+        let finalTotal = subtotal + shipping;
+        
+        // 準備訂單明細字串 (給 LINE 訊息用)
+        const detailsStr = Object.entries(cart).map(([n,o]) => `${n} x${o.qty}`).join('\n');
+
+        // 🚀 關鍵修改：傳送完整的 cart 物件給 GAS
         await fetch(GAS_URL, { 
             method: 'POST', 
-            body: JSON.stringify({ userId: profile.userId, userName: profile.displayName, details: details, totalPrice: total }) 
+            body: JSON.stringify({ 
+                userId: profile.userId, 
+                userName: profile.displayName, 
+                cartJson: JSON.stringify(cart), // 👈 這裡把購物車物件轉成字串傳過去
+                totalPrice: finalTotal 
+            }) 
         });
 
-        // 修改 LINE 回覆訊息 (加入匯款資訊)
-        if (liff.isInClient()) {
-            await liff.sendMessages([{
-                type: 'text',
-                text: `📦 訂單已送出成功！\n\n【訂單明細】\n${details.replace(/, /g, '\n')}\n\n💰 總金額：$${total}\n\n----------------\n🏦 匯款資訊\n銀行：(396) 街口\n帳號：903241863\n\n💡 溫馨提示：\n匯款後請回傳截圖，或帳號末五碼，以便加速核對出貨喔！`
-        }]);
+            // 發送 LINE 訊息
+            if (liff.isInClient()) {
+                await liff.sendMessages([{
+                    type: 'text',
+                    text: `📦 訂單已送出成功！\n\n【訂單明細】\n${details.replace(/, /g, '\n')}\n\n💰 總金額(含運)：$${total}\n\n----------------\n🏦 匯款資訊\n銀行：(396) 街口支付\n帳號：903241863\n\n💡 溫馨提示：\n匯款後請回傳截圖，以便核對出貨喔！`
+                }]);
+            }
+            
+            localStorage.removeItem('shopCart');
+            alert("訂單已送出，請查看聊天室內的匯款資訊！");
+            liff.closeWindow();
+        } catch (e) {
+            alert("送出失敗：" + e);
         }
-        localStorage.removeItem('shopCart');
-        alert("訂單已送出！");
-        liff.closeWindow();
     }
-function copyToClipboard(text) {
-    const el = document.createElement('textarea');
-    el.value = text;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
-    alert("帳號已複製，請至銀行 App 貼上匯款！");
-}
+
     function jumpPage(p) { page = parseInt(p); render(); window.scrollTo(0,0); }
     init();
 </script>
 </body>
 </html>
-
-
-
-
-
