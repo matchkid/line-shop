@@ -38,7 +38,27 @@
     color: #444;
     transition: background 0.2s;
 }
+/* 訂單狀態標籤 */
+.status-badge {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    float: right;
+    font-weight: normal;
+}
+.status-處理中 { background: #fff3cd; color: #856404; }
+.status-已出貨 { background: #d1ecf1; color: #0c5460; }
+.status-已完成 { background: #d4edda; color: #155724; }
 
+/* 商品名稱連結 */
+.product-name-link {
+    color: #333;
+    text-decoration: none; /* 移除下底線 */
+    display: inline-block;
+}
+.product-name-link:active {
+    color: var(--line-green); /* 點擊時變綠色 */
+}
 /* 點擊時的視覺回饋 */
 .cat-card:active {
     background: #f0f0f0;
@@ -125,7 +145,7 @@
 
 <script>
     const LIFF_ID = '2009084382-z4lJ5Lc6'; // ⚠️ 請確認你的正確 ID
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbzdzQt8S6PnLb9oqj8Pn2GRm7hm8jqtesQmO-NnymzYn2iVG5hrEo0g5IB-GKxPEuRoiw/exec'; // ⚠️ 請替換為正確網址
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbxqX_OFT3vFvbs-h3nft1CC31yvTyUZUBMFD-1TsIuExHXv6ZyCahpYGL1N8RrKCWeEug/exec'; // ⚠️ 請替換為正確網址
     let allData = [], filteredProducts = [], page = 1, size = 6;
     let cart = JSON.parse(localStorage.getItem('shopCart')) || {};
 
@@ -223,6 +243,7 @@
             <div class="product-card">
                 <img class="product-img" src="${p.img || ''}">
                 <div class="info">
+                <a href="${p.link || '#'}" target="_blank" class="product-name-link">
                     <b>${p.name}</b> <i class="product-note">${p.note || ''}</i><br>
                     <span style="color:#e44d26; font-weight:bold;">$${p.price}</span>
                 </div>
@@ -263,6 +284,7 @@
                 <div class="history-date">${h.date}</div>
                 <div class="history-details">${h.details}</div>
                 <div class="history-total">總計：$${h.total}</div>
+                <span class="status-badge status-${h.status}">${h.status}</span>
             </div>
         `).join('');
     }
@@ -318,5 +340,6 @@
 </script>
 </body>
 </html>
+
 
 
