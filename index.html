@@ -17,10 +17,39 @@
         .header { background: #fff; padding: 12px; text-align: center; font-weight: bold; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; height: 50px; box-sizing: border-box; }
         .nav-btn { color: var(--line-green); font-size: 14px; cursor: pointer; min-width: 60px; }
 
-        /* 分類按鈕 */
-        .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
-        .cat-card { background: white; padding: 25px 10px; border-radius: 15px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.05); font-weight: bold; font-size: 15px; }
+        /* 分類按鈕 單欄直列分類 */
+.cat-grid { 
+    display: grid; 
+    grid-template-columns: 1fr; /* 改為一排一個 */
+    gap: 12px; 
+    padding: 15px; 
+}
 
+.cat-card { 
+    background: white; 
+    padding: 18px 20px; /* 增加寬度感 */
+    border-radius: 12px; 
+    display: flex; /* 使用 Flex 排版 */
+    justify-content: space-between; /* 文字靠左，箭頭靠右 */
+    align-items: center; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); 
+    font-weight: bold; 
+    font-size: 16px; 
+    color: #444;
+    transition: background 0.2s;
+}
+
+/* 點擊時的視覺回饋 */
+.cat-card:active {
+    background: #f0f0f0;
+}
+
+/* 在分類右側補一個小箭頭符號 */
+.cat-card::after {
+    content: "❯";
+    color: var(--line-green);
+    font-size: 14px;
+}        
         /* 商品清單 */
         .container { padding: 10px; padding-bottom: 120px; }
         .product-card { background: #fff; border-radius: 12px; padding: 10px; margin-bottom: 8px; display: flex; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
@@ -160,6 +189,7 @@
     function showCategories() {
         document.getElementById('categoryView').classList.remove('hidden');
         document.getElementById('shopView').classList.add('hidden');
+        document.getElementById('historyView').classList.add('hidden'); // 👈 確保關閉歷史紀錄
         document.getElementById('backBtn').style.visibility = 'hidden';
         document.getElementById('title').innerText = "商品分類";
 
@@ -174,6 +204,7 @@
 
     function showProducts(cat) {
         document.getElementById('categoryView').classList.add('hidden');
+        document.getElementById('historyView').classList.add('hidden'); // 👈 確保關閉歷史紀錄
         document.getElementById('shopView').classList.remove('hidden');
         document.getElementById('backBtn').style.visibility = 'visible';
         document.getElementById('title').innerText = cat;
@@ -216,7 +247,8 @@
         document.getElementById('historyView').classList.remove('hidden');
         document.getElementById('backBtn').style.visibility = 'visible';
         document.getElementById('title').innerText = "歷史訌單";
-        
+        // 清除舊資料，顯示讀取中
+        document.getElementById('historyList').innerHTML = '<div style="text-align:center; padding:20px; color:#888;">正在讀取訂單...</div>';
         const profile = await liff.getProfile();
         const res = await fetch(`${GAS_URL}?action=getHistory&userId=${profile.userId}`);
         const history = await res.json();
@@ -286,4 +318,5 @@
 </script>
 </body>
 </html>
+
 
