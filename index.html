@@ -40,6 +40,16 @@
         .modal-content { background: #fff; width: 100%; border-radius: 20px 20px 0 0; padding: 20px; max-height: 80%; overflow-y: auto; box-sizing: border-box; }
         .btn-green { background: var(--line-green); color: white; border: none; padding: 12px; border-radius: 25px; font-weight: bold; width: 100%; font-size: 15px; margin-top: 15px; }
         .hidden { display: none; }
+        /* 歷史訂單樣式 */
+        .history-card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .history-date { font-size: 11px; color: #999; margin-bottom: 5px; }
+        .history-details { font-size: 13px; color: #333; line-height: 1.5; }
+        .history-total { text-align: right; font-weight: bold; color: #e44d26; margin-top: 8px; }
+
+        /* 商品卡片與備註 */
+        .product-card { background: #fff; border-radius: 12px; padding: 10px; margin-bottom: 8px; display: flex; align-items: center; }
+        .product-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; margin-right: 12px; }
+        .product-note { font-style: italic; color: #999; font-size: 11px; margin-left: 5px; }
     </style>
 </head>
 <body>
@@ -49,6 +59,7 @@
     <p style="color:#666">首次使用請先登記聯絡資訊：</p>
     <input type="text" id="regName" class="reg-input" placeholder="收件人姓名">
     <input type="tel" id="regPhone" class="reg-input" placeholder="聯絡電話">
+    <input type="text" id="regName" class="reg-input" placeholder="收件地址">
     <button class="btn-green" onclick="registerUser()">開始購物</button>
 </div>
 
@@ -59,7 +70,7 @@
         <div style="width:40px"></div>
     </div>
 
-    <div id="categoryView" class="cat-grid"></div>
+    <div id="categoryView" class="hidden" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:15px;"></div>
 
     <div id="shopView" class="hidden">
         <div class="container" id="productList"></div>
@@ -67,6 +78,9 @@
             <span id="pageText">第 1 頁 / 共 1 頁</span>
             <select id="pageSelect" onchange="jumpPage(this.value)"></select>
         </div>
+    </div>
+    <div id="historyView" class="hidden" style="padding:15px;">
+        <div id="historyList">正在讀取歷史訂單...</div>
     </div>
 </div>
 
@@ -86,7 +100,6 @@
 <script>
     const LIFF_ID = '2009084382-z4lJ5Lc6'; // ⚠️ 改這裡
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbwtA2UqAFK34pBSEIEZJdXpwpdvUmwq9xUGQSrvzYzWoO6xxmDVApIocgvy31mCbnYHtQ/exec'; // ⚠️ 改這裡
-
     let allData = [], filteredProducts = [], page = 1, size = 6;
     let cart = JSON.parse(localStorage.getItem('shopCart')) || {};
 
@@ -94,7 +107,25 @@
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
-        
+
+        // 檢查網址參數 ?page=history
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetPage = urlParams.get('page');
+
+        // 讀取商品資料
+        const res = await fetch(GAS_URL);
+        allData = await res.json();
+
+        if (targetPage === 'history') {
+            showHistory();
+        } else if (targetPage === 'cart' && Object.keys(cart).length > 0) {
+            loadShopData(); // 先載入資料
+            setTimeout(() => openCart(), 500); // 延遲開啟購物車
+        } else {
+            loadShopData();
+        }
+        updateFooter();
+    }
         // 1. 檢查註冊
         const res = await fetch(`${GAS_URL}?action=checkUser&userId=${profile.userId}`);
         const user = await res.json();
@@ -109,9 +140,10 @@
     async function registerUser() {
         const name = document.getElementById('regName').value;
         const phone = document.getElementById('regPhone').value;
-        if(!name || !phone) return alert("請完整填寫");
+        const address = document.getElementById('regaddress').value;
+        if(!name || !phone || !address) return alert("請完整填寫");
         const profile = await liff.getProfile();
-        await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action:'register', userId:profile.userId, userName:name, phone:phone }) });
+        await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action:'register', userId:profile.userId, userName:name, phone:phone, address:address }) });
         document.getElementById('regModal').style.display = 'none';
         loadShopData();
     }
@@ -123,6 +155,14 @@
         showCategories();
     }
 
+    function renderCategories() {
+        let cats = [];
+        allData.forEach(p => { if(p.category) cats = cats.concat(p.category.split('/')); });
+        const uniqueCats = [...new Set(cats.filter(c => c))];
+        document.getElementById('categoryView').innerHTML = uniqueCats.map(c => `
+            <div style="background:white; padding:25px 10px; border-radius:15px; text-align:center; font-weight:bold; box-shadow:0 2px 6px rgba(0,0,0,0.05);" onclick="showProducts('${c}')">${c}</div>
+        `).join('');
+    }
     function showCategories() {
         document.getElementById('categoryView').classList.remove('hidden');
         document.getElementById('shopView').classList.add('hidden');
@@ -147,6 +187,54 @@
         filteredProducts = allData.filter(p => p.category && p.category.split('/').includes(cat));
         page = 1;
         render();
+    }
+    async function showHistory() {
+        document.getElementById('categoryView').classList.add('hidden');
+        document.getElementById('shopView').classList.add('hidden');
+        document.getElementById('historyView').classList.remove('hidden');
+        document.getElementById('title').innerText = "歷史訂單查詢";
+        
+        const profile = await liff.getProfile();
+        const res = await fetch(`${GAS_URL}?action=getHistory&userId=${profile.userId}`);
+        const history = await res.json();
+        
+        if (history.length === 0) {
+            document.getElementById('historyList').innerText = "尚無訂單紀錄。";
+            return;
+        }
+
+        document.getElementById('historyList').innerHTML = history.map(h => `
+            <div class="history-card">
+                <div class="history-date">${h.date}</div>
+                <div class="history-details">${h.details}</div>
+                <div class="history-total">總計：$${h.total}</div>
+            </div>
+        `).join('');
+    }
+    function goHome() { location.href = `https://liff.line.me/${LIFF_ID}`; }
+
+    async function finalSubmit() {
+        const profile = await liff.getProfile();
+        const details = Object.entries(cart).map(([n,o]) => `${n}x${o.qty}`).join(', ');
+        const total = document.getElementById('cartTotal').innerText;
+
+        // 1. 傳送給 GAS
+        await fetch(GAS_URL, { 
+            method: 'POST', 
+            body: JSON.stringify({ userId: profile.userId, userName: profile.displayName, details: details, totalPrice: total }) 
+        });
+
+        // 2. 自動發送 LINE 訊息回覆 (關鍵！)
+        if (liff.isInClient()) {
+            await liff.sendMessages([{
+                type: 'text',
+                text: `📦 訂單已送出成功！\n\n【訂單明細】\n${details.replace(/, /g, '\n')}\n\n💰 總金額：$${total}\n\n感謝您的訂購！`
+            }]);
+        }
+
+        localStorage.removeItem('shopCart');
+        alert("訂單已送出，請查看聊天室明細！");
+        liff.closeWindow();
     }
 
     function render() {
@@ -213,5 +301,6 @@
 </script>
 </body>
 </html>
+
 
 
