@@ -141,11 +141,16 @@
         <div id="cartDetails"></div>
         <button class="btn-green" onclick="finalSubmit()">送出訂單</button>
     </div>
+<div class="bank-info">
+  <p>匯款帳號：(396)903241863</p>
+  <button onclick="copyAccount('(822) 123-456789-012')">一鍵複製帳號</button>
+</div>
+    
 </div>
 
 <script>
     const LIFF_ID = '2009084382-z4lJ5Lc6'; // ⚠️ 請確認你的正確 ID
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbxqX_OFT3vFvbs-h3nft1CC31yvTyUZUBMFD-1TsIuExHXv6ZyCahpYGL1N8RrKCWeEug/exec'; // ⚠️ 請替換為正確網址
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbws10-dZwc0DZia470sKW60G-Ihw91VhNfNkF8O7F9X80-2rVzXJkWJNiL2_kYVhcxUQA/exec'; // ⚠️ 請替換為正確網址
     let allData = [], filteredProducts = [], page = 1, size = 6;
     let cart = JSON.parse(localStorage.getItem('shopCart')) || {};
 
@@ -303,12 +308,21 @@
     }
 
     function updateFooter() {
-        let total = 0, count = 0;
-        for(let k in cart) { total += cart[k].qty * cart[k].price; count += cart[k].qty; }
-        document.getElementById('cartTotal').innerText = total;
-        document.getElementById('cartCount').innerText = count;
-        document.getElementById('footerBar').style.transform = count > 0 ? "translateY(0)" : "translateY(120px)";
+    let subtotal = 0, count = 0;
+    for(let k in cart) { subtotal += cart[k].qty * cart[k].price; count += cart[k].qty; }
+    
+    // 運費邏輯：滿 1000 免運，否則 60 元
+    let shipping = (subtotal >= 1000 || subtotal === 0) ? 0 : 60;
+    let total = subtotal + shipping;
+
+    document.getElementById('cartTotal').innerText = total;
+    document.getElementById('cartCount').innerText = count;
+    
+    // 如果想在畫面上提示還差多少免運
+    if (shipping > 0) {
+        console.log(`還差 $${1000 - subtotal} 即可免運！`);
     }
+}
 
     function openCart() {
         let h = '';
@@ -338,12 +352,21 @@
         alert("訂單已送出！");
         liff.closeWindow();
     }
-
+function copyToClipboard(text) {
+    const el = document.createElement('textarea');
+    el.value = text;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    alert("帳號已複製，請至銀行 App 貼上匯款！");
+}
     function jumpPage(p) { page = parseInt(p); render(); window.scrollTo(0,0); }
     init();
 </script>
 </body>
 </html>
+
 
 
 
