@@ -68,7 +68,7 @@
 .cat-card::after {
     content: "❯";
     color: var(--line-green);
-    font-size: 14px;
+    font-size: 12px;
 }        
         /* 商品清單 */
         .container { padding: 10px; padding-bottom: 120px; }
@@ -243,10 +243,13 @@
             <div class="product-card">
                 <img class="product-img" src="${p.img || ''}">
                 <div class="info">
-                <a href="${p.link || '#'}" target="_blank" class="product-name-link">
-                    <b>${p.name}</b> <i class="product-note">${p.note || ''}</i><br>
-                    <span style="color:#e44d26; font-weight:bold;">$${p.price}</span>
-                </div>
+    <a href="${p.link || '#'}" target="_blank" class="product-name-link">
+        <b>${p.name}</b>
+        <span style="display:inline-block; width:14px; height:14px; border:1px solid #06C755; color:#06C755; border-radius:50%; text-align:center; line-height:12px; font-size:10px; margin-left:3px; vertical-align:middle;">i</span>
+    </a>
+    <i class="product-note">${p.note || ''}</i><br>
+    <span style="color:#e44d26; font-weight:bold;">$${p.price}</span>
+</div>
                 <div style="display:flex; align-items:center; background:#f8f8f8; border-radius:20px; padding:2px;">
                     <button onclick="add('${p.name}',${p.price},-1)" style="width:26px; height:26px; border-radius:50%; border:none; background:#fff;">-</button>
                     <span style="width:25px; text-align:center; font-weight:bold; font-size:12px;" id="q-${p.name}">${cart[p.name]?.qty || 0}</span>
@@ -324,11 +327,12 @@
             body: JSON.stringify({ userId: profile.userId, userName: profile.displayName, details: details, totalPrice: total }) 
         });
 
+        // 修改 LINE 回覆訊息 (加入匯款資訊)
         if (liff.isInClient()) {
             await liff.sendMessages([{
                 type: 'text',
-                text: `📦 訂單已送出成功！\n\n【訂單明細】\n${details.replace(/, /g, '\n')}\n\n💰 總金額：$${total}`
-            }]);
+                text: `📦 訂單已送出成功！\n\n【訂單明細】\n${details.replace(/, /g, '\n')}\n\n💰 總金額：$${total}\n\n----------------\n🏦 匯款資訊\n銀行：(396) 街口\n帳號：903241863\n\n💡 溫馨提示：\n匯款後請回傳截圖，或帳號末五碼，以便加速核對出貨喔！`
+        }]);
         }
         localStorage.removeItem('shopCart');
         alert("訂單已送出！");
@@ -340,6 +344,7 @@
 </script>
 </body>
 </html>
+
 
 
 
