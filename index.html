@@ -55,6 +55,20 @@
         /* 分頁控制項 */
         .pager { text-align: center; padding: 50px; font-size: 12px; color: #666; }
         .pager select { margin-left: 10px; padding: 2px 5px; border-radius: 4px; }
+/* 公告區塊樣式 */
+        .announcement-box {
+    background: #fff;
+    margin: 15px;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border-left: 5px solid var(--line-green);
+}
+.announcement-box h3 { margin: 0 0 8px 0; color: #333; font-size: 16px; }
+.announcement-box p { margin: 0; color: #666; line-height: 1.5; }
+
+/* 推薦商品可以稍微加大一點 */
+#recommendList .product-card { border: 1px solid #eee; }
     </style>
 </head>
 <body>
@@ -70,12 +84,30 @@
 
 <div id="mainApp" class="hidden">
     <div class="header">
-        <div id="backBtn" class="nav-btn" onclick="showCategories()" style="visibility:hidden">🏠 首頁</div>
-        <div id="title">商品分類</div>
-        <div id="historyBtn" class="nav-btn" onclick="showHistory()">📋 訂單紀錄</div>
+        <div id="backBtn" class="nav-btn" onclick="showHome()" style="visibility:hidden">🏠 首頁</div>
+        <div id="title">喜幼 微商城</div>
     </div>
 
-    <div id="categoryView" class="cat-grid"></div>
+    <div id="homeView">
+        <div class="announcement-box">
+            <h3>🎉 本月推薦</h3>
+            <p>歡迎光臨！喜幼為您挑選近期最熱門商品，請參考！</p>
+        </div>
+
+        <div style="padding: 10px 15px; font-weight: bold; font-size: 16px;">🔥 熱門推薦</div>
+        
+        <div class="container" id="recommendList"></div>
+    </div>
+
+    <div id="catalogView" class="hidden">
+        <div id="categoryGrid" class="cat-grid"></div>
+        <div id="productList" class="container"></div>
+    </div>
+
+    <div id="historyView" class="hidden" style="padding:15px;">
+        <div id="historyList"></div>
+    </div>
+</div>
 
 <div id="shopView" class="hidden">
         <div class="container" id="productList"></div>
@@ -111,7 +143,7 @@
 
 <script>
     const LIFF_ID = '2009084382-z4lJ5Lc6'; // ⚠️ 請確認你的正確 ID
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbwg0xA9b6VeZGGZSyT-6BIpwyNpmbCcsCmIQ1IQIviy2dc4H9QejEHN26Rq20s-B6hLuw/exec'; // ⚠️ 請替換為正確網址
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbxRBRYk4dXvXd98KhIRHYez3k-xzl44kRAgZOXtEZ6DmuASJESDD90cB2GqP35TopQzqg/exec'; // ⚠️ 請替換為正確網址
     let allData = [], filteredProducts = [], page = 1, size = 10;
     let cart = JSON.parse(localStorage.getItem('shopCart')) || {};
 
@@ -132,11 +164,15 @@
             const res = await fetch(GAS_URL);
             allData = await res.json();
 
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('page') === 'history') {
-                showHistory();
-            } else {
-                showCategories();
+const urlParams = new URLSearchParams(window.location.search);
+    const pageType = urlParams.get('page');
+
+    if (pageType === 'history') {
+        showHistory();
+    } else if (pageType === 'catalog') {
+        showCatalog(); // 顯示商品目錄
+    } else {
+        showHome(); // 預設顯示首頁 (文字區塊 + 推薦)
             }
             document.getElementById('mainApp').classList.remove('hidden');
             updateFooter(); // 初始化後立即更新一次購物車顯示
@@ -162,23 +198,39 @@
             location.reload(); 
         }
     }
+    function showHome() {
+    document.getElementById('homeView').classList.remove('hidden');
+    document.getElementById('catalogView').classList.add('hidden');
+    document.getElementById('historyView').classList.add('hidden');
+    document.getElementById('backBtn').style.visibility = 'hidden';
+    document.getElementById('title').innerText = "喜幼 微商城";
 
+    // 篩選推薦商品 (假設你在試算表 note 欄位寫了 "推薦")
+    const recommends = allData.filter(p => p.note && p.note.includes("推薦"));
+    renderList(recommends, 'recommendList');
+}
     // 顯示分類頁面
-    function showCategories() {
-        document.getElementById('categoryView').classList.remove('hidden');
-        document.getElementById('shopView').classList.add('hidden');
-        document.getElementById('historyView').classList.add('hidden');
-        document.getElementById('backBtn').style.visibility = 'hidden';
-        document.getElementById('title').innerText = "商品分類";
+    function showCatalog() {
+    document.getElementById('homeView').classList.add('hidden');
+    document.getElementById('catalogView').classList.remove('hidden');
+    document.getElementById('backBtn').style.visibility = 'visible';
+    document.getElementById('title').innerText = "商品目錄";
+    showCategories(); // 顯示原本的分類按鈕
+}
 
-        let cats = [];
-        allData.forEach(p => { if(p.category) cats = cats.concat(p.category.split('/')); });
-        const uniqueCats = [...new Set(cats.filter(c => c))];
-
-        document.getElementById('categoryView').innerHTML = uniqueCats.map(c => `
-            <div class="cat-card" onclick="showProducts('${c}')"><span>${c}</span></div>
-        `).join('');
-    }
+// 統一的渲染函式
+function renderList(items, targetId) {
+    const target = document.getElementById(targetId);
+    target.innerHTML = items.map(p => `
+        <div class="product-card">
+            <img class="product-img" src="${p.img || ''}">
+            <div class="info">
+                <b>${p.name}</b><br>
+                <span style="color:#e44d26; font-weight:bold;">$${p.price}</span>
+            </div>
+            </div>
+    `).join('');
+}
 
     // 顯示商品頁面
     function showProducts(cat) {
@@ -369,6 +421,7 @@
 </script>
 </body>
 </html>
+
 
 
 
