@@ -6,462 +6,219 @@
     <title>喜幼 微商城</title>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        :root {
-            --line-green: #06C755;
-            --bg-gray: #f4f4f4;
-            --text-dark: #333;
-            --capsule-bg: #eeeeee;
+        :root { --line-green: #06C755; --bg-gray: #f8f8f8; }
+        body { font-family: sans-serif; background: var(--bg-gray); margin: 0; padding: 0; }
+
+        /* --- 頂部搜尋欄 --- */
+        .header-search {
+            position: fixed; top: 0; left: 0; right: 0;
+            background: white; padding: 10px 15px;
+            z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .search-box {
+            width: 100%; padding: 8px 15px; border-radius: 20px;
+            border: 1px solid #ddd; outline: none; box-sizing: border-box;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-gray);
-            margin: 0;
-            padding: 0;
-            color: var(--text-dark);
-        }
+        /* --- 內容容器 (頂部留白給搜尋欄) --- */
+        .main-app { padding-top: 60px; padding-bottom: 120px; } /* 底部留白120px確保不被購物車遮住 */
 
-        /* --- 頂部固定區 --- */
-        .sticky-header {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            background: white;
-            z-index: 1000;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        /* --- 推薦商品區塊 (手動圖片連結) --- */
+        .recommend-area { padding: 10px; }
+        .recommend-title { font-weight: bold; margin-bottom: 8px; font-size: 15px; display: block; }
+        .recommend-row { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
+        .recommend-item { 
+            min-width: 140px; background: white; border-radius: 8px; 
+            overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
+        .recommend-item img { width: 100%; height: 100px; object-fit: cover; }
+        .recommend-info { padding: 5px; font-size: 12px; text-align: center; }
 
-        .header-main {
-            display: flex;
-            align-items: center;
-            padding: 10px 15px;
-            justify-content: space-between;
-        }
-
-        .header-title { font-weight: bold; font-size: 18px; }
-
-        /* --- 搜尋框 --- */
-        .search-container {
-            padding: 0 15px 10px 15px;
-        }
-        .search-input {
-            width: 100%;
-            padding: 8px 12px;
-            border-radius: 20px;
-            border: 1px solid #ddd;
-            outline: none;
-            box-sizing: border-box;
-            font-size: 14px;
-        }
-
-        /* --- 固定位置的膠囊導航按鈕 (原本彈跳改固定) --- */
-        .capsule-nav {
-            display: flex;
-            gap: 10px;
-            padding: 5px 15px 12px 15px;
-            overflow-x: auto;
-            white-space: nowrap;
-            background: white;
-        }
-        /* 隱藏滾動條 */
-        .capsule-nav::-webkit-scrollbar { display: none; }
-
-        .capsule-btn {
-            background: var(--capsule-bg);
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 13px;
-            color: #555;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            font-weight: 500;
-        }
-        .capsule-btn.active {
-            background: var(--line-green);
-            color: white;
-        }
-
-        /* --- 內容區間距修正 --- */
-        .main-content {
-            padding-top: 130px; /* 避開頂部固定區 */
-            padding-bottom: 100px; /* 避開底部購物車鈕 */
-        }
-
-        .container { padding: 0 10px; }
-
-        /* --- 首頁區塊 --- */
-        .announcement-box {
-            background: white;
-            margin: 10px;
-            padding: 15px;
-            border-radius: 12px;
-            border-left: 5px solid var(--line-green);
-        }
-
-        /* --- 推薦商品區塊 (手動圖片連結區) --- */
-        .recommend-section {
-            margin: 15px 10px;
-        }
-        .section-title { font-weight: bold; margin-bottom: 10px; display: block; }
-        .recommend-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        /* 手動填寫圖片商品樣式 */
-        .manual-item {
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            text-decoration: none;
-            color: inherit;
-        }
-        .manual-item img { width: 100%; display: block; height: 150px; object-fit: cover; }
-        .manual-item .p-info { padding: 8px; font-size: 13px; }
-
-        /* --- 商品清單樣式 --- */
+        /* --- 商品清單 --- */
+        .product-list { padding: 10px; background: white; }
         .product-card {
-            background: white;
-            border-radius: 10px;
-            display: flex;
-            padding: 10px;
-            margin-bottom: 10px;
-            align-items: center;
+            display: flex; align-items: center; padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
         }
-        .product-img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; }
-        .product-detail { flex: 1; margin-left: 12px; }
-        .product-price { color: #e44d26; font-weight: bold; }
+        .product-img { width: 60px; height: 60px; border-radius: 5px; object-fit: cover; }
+        .product-info { flex: 1; margin-left: 10px; }
+        .product-name { font-size: 14px; font-weight: bold; }
+        .product-price { color: #e44d26; font-size: 13px; margin-top: 3px; }
 
-        .qty-controls { display: flex; align-items: center; }
-        .btn-qty {
-            width: 28px; height: 28px; border-radius: 50%; border: 1px solid #ddd;
-            background: white; font-size: 18px; display: flex; align-items: center; justify-content: center;
+        /* --- 加減按鈕 --- */
+        .qty-box { display: flex; align-items: center; }
+        .btn-qty { 
+            width: 25px; height: 25px; border-radius: 50%; border: 1px solid #ccc;
+            background: white; display: flex; align-items: center; justify-content: center;
         }
-        .qty-num { margin: 0 10px; font-weight: bold; }
+        .qty-num { margin: 0 8px; font-size: 14px; min-width: 15px; text-align: center; }
 
-        /* --- 分頁器 (直接排在商品下方) --- */
-        .pager-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 15px 0;
-            margin-top: -5px; /* 緊貼商品區塊 */
-            background: transparent;
+        /* --- 分頁器 (緊跟在商品清單下方) --- */
+        .pagination-bar {
+            background: white; padding: 15px; 
+            display: flex; justify-content: space-between; align-items: center;
+            border-top: 1px solid #eee; margin-top: -10px; /* 消除與清單的間隙 */
         }
-        .pager-select { padding: 5px; border-radius: 5px; margin-left: 10px; }
+        .page-info { font-size: 13px; color: #666; }
+        .page-btn { padding: 5px 12px; border-radius: 4px; border: 1px solid #ddd; background: #fff; font-size: 12px; }
 
-        /* --- 底部購物車條 --- */
-        .footer-cart {
-            position: fixed;
-            bottom: 20px; left: 15px; right: 15px;
-            background: #333;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            z-index: 2000;
-            display: none;
+        /* --- 底部購物車按鈕 --- */
+        .cart-bar {
+            position: fixed; bottom: 25px; left: 15px; right: 15px;
+            background: #333; color: white; border-radius: 30px;
+            padding: 12px 20px; display: flex; justify-content: space-between;
+            align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 2000; display: none;
         }
-        .btn-checkout {
-            background: var(--line-green);
-            color: white;
-            border: none;
-            padding: 8px 18px;
-            border-radius: 20px;
-            font-weight: bold;
-        }
+        .btn-submit { background: var(--line-green); color: white; border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; }
 
-        /* 隱藏邏輯 */
         .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <div id="loading" style="text-align: center; margin-top: 50px;">載入中...</div>
+    <div id="app" class="main-app">
+        <div class="header-search">
+            <input type="text" id="searchInput" class="search-box" placeholder="🔍 搜尋商品..." oninput="doSearch()">
+        </div>
 
-    <div id="app" class="hidden">
-        <div class="sticky-header">
-            <div class="header-main">
-                <div class="header-title" id="pageTitle">喜幼 微商城</div>
-                <div style="font-size: 12px; color: #888;" onclick="showHistory()">📋 訂單紀錄</div>
-            </div>
-            
-            <div class="search-container">
-                <input type="text" id="searchInput" class="search-input" placeholder="搜尋商品名稱..." oninput="handleSearch()">
-            </div>
-
-            <div class="capsule-nav">
-                <button class="capsule-btn active" id="btn-home" onclick="navTo('home')">🏠 首頁精選</button>
-                <button class="capsule-btn" id="btn-catalog" onclick="navTo('catalog')">📂 所有目錄</button>
-                <button class="capsule-btn" id="btn-history" onclick="navTo('history')">📋 我的訂單</button>
-                <button class="capsule-btn" onclick="liff.closeWindow()">❌ 關閉</button>
+        <div class="recommend-area" id="recommendSection">
+            <span class="recommend-title">✨ 精選推薦</span>
+            <div class="recommend-row">
+                <div class="recommend-item" onclick="quickAdd('推薦商品A', 490)">
+                    <img src="https://via.placeholder.com/150x100?text=Product+A">
+                    <div class="recommend-info">精選商品A<br><b>$490</b></div>
+                </div>
+                <div class="recommend-item" onclick="quickAdd('推薦商品B', 320)">
+                    <img src="https://via.placeholder.com/150x100?text=Product+B">
+                    <div class="recommend-info">精選商品B<br><b>$320</b></div>
+                </div>
             </div>
         </div>
 
-        <div class="main-content">
-            <div id="view-home">
-                <div class="announcement-box">
-                    <b style="color: var(--line-green);">📢 門市公告</b><br>
-                    <span style="font-size: 13px; color: #666;">全館滿 $1000 免運！匯款後請截圖回傳。</span>
-                </div>
+        <div class="product-list" id="productList"></div>
 
-                <div class="recommend-section">
-                    <span class="section-title">✨ 店長推薦商品</span>
-                    <div class="recommend-grid">
-                        <div class="manual-item" onclick="quickAdd('推薦商品A', 490)">
-                            <img src="https://via.placeholder.com/200x150?text=Product+A">
-                            <div class="p-info"><b>精選護髮素</b><br><span style="color:#e44d26;">$490</span></div>
-                        </div>
-                        <div class="manual-item" onclick="quickAdd('推薦商品B', 320)">
-                            <img src="https://via.placeholder.com/200x150?text=Product+B">
-                            <div class="p-info"><b>保濕面膜組</b><br><span style="color:#e44d26;">$320</span></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="padding: 10px; font-weight: bold;">🔥 熱銷商品清單</div>
-                <div id="home-list" class="container"></div>
-            </div>
-
-            <div id="view-catalog" class="hidden">
-                <div id="category-bar" style="padding: 10px; overflow-x: auto; display: flex; gap: 8px;"></div>
-                <div id="catalog-list" class="container"></div>
-                
-                <div class="pager-container" id="pager">
-                    <span id="pageInfo" style="font-size: 14px;">第 1 頁 / 共 1 頁</span>
-                    <select id="pageSelect" class="pager-select" onchange="changePage(this.value)"></select>
-                </div>
-            </div>
-
-            <div id="view-history" class="hidden">
-                <div id="history-list" class="container"></div>
-            </div>
-        </div>
-
-        <div id="cartBar" class="footer-cart" onclick="showCartDetails()">
-            <div>已選 <span id="cartCount">0</span> 件，共 $<span id="cartTotal">0</span></div>
-            <button class="btn-checkout">確認下單</button>
+        <div class="pagination-bar" id="pager">
+            <button class="page-btn" onclick="changePage(-1)">上一頁</button>
+            <span class="page-info" id="pageDisplay">第 1 頁 / 共 1 頁</span>
+            <button class="page-btn" onclick="changePage(1)">下一頁</button>
         </div>
     </div>
 
+    <div id="cartBar" class="cart-bar" onclick="sendOrder()">
+        <div>已選 <span id="cartCount">0</span> 件，共 $<span id="cartTotal">0</span></div>
+        <button class="btn-submit">送出訂單</button>
+    </div>
+
     <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbxRBRYk4dXvXd98KhIRHYez3k-xzl44kRAgZOXtEZ6DmuASJESDD90cB2GqP35TopQzqg/exec"; // ⚠️ 請更換
-        let allProducts = [];
-        let filteredProducts = [];
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbz0W3uEcL_e8J_OmP4SLwwNMADrv1iqQTe-Ikb0AWlCgNjy2PYg4UPNLcf732RlllOjcw/exec"; //GAS URL
+        let allItems = [];
+        let displayItems = [];
         let cart = {};
-        let currentPage = 1;
-        const pageSize = 10;
-        let currentView = 'home';
+        let page = 1;
+        const size = 10;
 
-        // --- 初始化 ---
         async function init() {
-            try {
-                await liff.init({ liffId: "2009084382-z4lJ5Lc6" }); // ⚠️ 請更換
-                if (!liff.isLoggedIn()) { liff.login(); return; }
-                
-                // 向 GAS 抓取資料
-                const resp = await fetch(GAS_URL);
-                allProducts = await resp.json();
-                filteredProducts = allProducts;
-                
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('app').classList.remove('hidden');
-                
-                renderHome();
-                renderCategoryBar();
-            } catch (e) {
-                alert("載入失敗: " + e);
-            }
-        }
-
-        // --- 導覽切換 ---
-        function navTo(view) {
-            currentView = view;
-            document.getElementById('view-home').classList.add('hidden');
-            document.getElementById('view-catalog').classList.add('hidden');
-            document.getElementById('view-history').classList.add('hidden');
-            
-            document.querySelectorAll('.capsule-btn').forEach(b => b.classList.remove('active'));
-            
-            if(view === 'home') {
-                document.getElementById('view-home').classList.remove('hidden');
-                document.getElementById('btn-home').classList.add('active');
-                document.getElementById('pageTitle').innerText = "喜幼 微商城";
-            } else if (view === 'catalog') {
-                document.getElementById('view-catalog').classList.remove('hidden');
-                document.getElementById('btn-catalog').classList.add('active');
-                document.getElementById('pageTitle').innerText = "商品目錄";
-                renderCatalog();
-            } else if (view === 'history') {
-                document.getElementById('view-history').classList.remove('hidden');
-                document.getElementById('btn-history').classList.add('active');
-                document.getElementById('pageTitle').innerText = "歷史訂單";
-                loadHistory();
-            }
-            window.scrollTo(0,0);
+            await liff.init({ liffId: "2009084382-z4lJ5Lc6" }); //LIFF ID
+            const resp = await fetch(GAS_URL);
+            allItems = await resp.json();
+            displayItems = allItems;
+            render();
         }
 
         // --- 搜尋功能 ---
-        function handleSearch() {
-            const keyword = document.getElementById('searchInput').value.toLowerCase();
-            filteredProducts = allProducts.filter(p => p.name.toLowerCase().includes(keyword));
-            currentPage = 1;
-            
-            if(currentView === 'home') renderHome();
-            else renderCatalog();
+        function doSearch() {
+            const key = document.getElementById('searchInput').value.toLowerCase();
+            displayItems = allItems.filter(i => i.name.toLowerCase().includes(key));
+            page = 1;
+            render();
+            // 搜尋時隱藏手動推薦區，讓結果更清楚
+            document.getElementById('recommendSection').style.display = key ? 'none' : 'block';
         }
 
-        // --- 渲染首頁 (推薦/精選) ---
-        function renderHome() {
-            const homeList = document.getElementById('home-list');
-            // 這裡顯示前 5 筆當作熱銷
-            const list = filteredProducts.slice(0, 5);
-            homeList.innerHTML = list.map(p => productTemplate(p)).join('');
+        // --- 渲染畫面 ---
+        function render() {
+            const list = document.getElementById('productList');
+            const start = (page - 1) * size;
+            const currentData = displayItems.slice(start, start + size);
+
+            list.innerHTML = currentData.map(item => {
+                const q = cart[item.name] ? cart[item.name].qty : 0;
+                return `
+                    <div class="product-card">
+                        <img class="product-img" src="${item.img || ''}">
+                        <div class="product-info">
+                            <div class="product-name">${item.name}</div>
+                            <div class="product-price">$${item.price}</div>
+                        </div>
+                        <div class="qty-box">
+                            <button class="btn-qty" onclick="updateQty('${item.name}', ${item.price}, -1)">-</button>
+                            <span class="qty-num">${q}</span>
+                            <button class="btn-qty" onclick="updateQty('${item.name}', ${item.price}, 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const totalPages = Math.ceil(displayItems.length / size) || 1;
+            document.getElementById('pageDisplay').innerText = `第 ${page} 頁 / 共 ${totalPages} 頁`;
         }
 
-        // --- 渲染分類與目錄 ---
-        function renderCategoryBar() {
-            const categories = [...new Set(allProducts.map(p => p.category))];
-            const bar = document.getElementById('category-bar');
-            bar.innerHTML = `<button onclick="filterCat('')" style="padding:5px 10px; border-radius:15px; border:1px solid #ddd; background:white;">全部</button>` + 
-                categories.map(c => `<button onclick="filterCat('${c}')" style="padding:5px 10px; border-radius:15px; border:1px solid #ddd; background:white;">${c}</button>`).join('');
-        }
-
-        function filterCat(cat) {
-            filteredProducts = cat ? allProducts.filter(p => p.category === cat) : allProducts;
-            currentPage = 1;
-            renderCatalog();
-        }
-
-        function renderCatalog() {
-            const start = (currentPage - 1) * pageSize;
-            const list = filteredProducts.slice(start, start + pageSize);
-            document.getElementById('catalog-list').innerHTML = list.map(p => productTemplate(p)).join('');
-            updatePager();
-        }
-
-        // --- 分頁邏輯 (緊貼下方) ---
-        function updatePager() {
-            const totalPages = Math.ceil(filteredProducts.length / pageSize) || 1;
-            document.getElementById('pageInfo').innerText = `第 ${currentPage} 頁 / 共 ${totalPages} 頁`;
-            
-            const select = document.getElementById('pageSelect');
-            select.innerHTML = "";
-            for(let i=1; i<=totalPages; i++) {
-                const opt = document.createElement('option');
-                opt.value = i; opt.innerText = `跳至第 ${i} 頁`;
-                if(i === currentPage) opt.selected = true;
-                select.appendChild(opt);
+        // --- 分頁邏輯 ---
+        function changePage(delta) {
+            const totalPages = Math.ceil(displayItems.length / size) || 1;
+            let newPage = page + delta;
+            if (newPage >= 1 && newPage <= totalPages) {
+                page = newPage;
+                render();
+                window.scrollTo(0,0);
             }
-        }
-
-        function changePage(p) {
-            currentPage = parseInt(p);
-            renderCatalog();
-            window.scrollTo(0,0);
-        }
-
-        // --- 商品樣式模板 ---
-        function productTemplate(p) {
-            const q = cart[p.name] ? cart[p.name].qty : 0;
-            return `
-                <div class="product-card">
-                    <img class="product-img" src="${p.img || 'https://via.placeholder.com/80'}">
-                    <div class="product-detail">
-                        <b>${p.name}</b><br>
-                        <span class="product-price">$${p.price}</span>
-                    </div>
-                    <div class="qty-controls">
-                        <button class="btn-qty" onclick="updateCart('${p.name}', ${p.price}, -1)">-</button>
-                        <span class="qty-num">${q}</span>
-                        <button class="btn-qty" onclick="updateCart('${p.name}', ${p.price}, 1)">+</button>
-                    </div>
-                </div>
-            `;
         }
 
         // --- 購物車邏輯 ---
-        function updateCart(name, price, delta) {
-            if(!cart[name]) cart[name] = { price: price, qty: 0 };
+        function updateQty(name, price, delta) {
+            if (!cart[name]) cart[name] = { price: price, qty: 0 };
             cart[name].qty += delta;
-            if(cart[name].qty <= 0) delete cart[name];
-            
-            updateCartUI();
-            // 重新渲染當前清單以更新數字
-            if(currentView === 'home') renderHome();
-            else renderCatalog();
+            if (cart[name].qty <= 0) delete cart[name];
+            updateUI();
+            render();
         }
 
         function quickAdd(name, price) {
-            updateCart(name, price, 1);
+            updateQty(name, price, 1);
             alert("已加入購物車: " + name);
         }
 
-        function updateCartUI() {
-            let total = 0, count = 0;
-            for(let k in cart) {
-                total += cart[k].price * cart[k].qty;
+        function updateUI() {
+            let count = 0, total = 0;
+            for (let k in cart) {
                 count += cart[k].qty;
+                total += cart[k].qty * cart[k].price;
             }
             const bar = document.getElementById('cartBar');
-            if(count > 0) {
-                bar.style.display = 'flex';
-                document.getElementById('cartCount').innerText = count;
-                document.getElementById('cartTotal').innerText = total;
-            } else {
-                bar.style.display = 'none';
-            }
+            bar.style.display = count > 0 ? 'flex' : 'none';
+            document.getElementById('cartCount').innerText = count;
+            document.getElementById('cartTotal').innerText = total;
         }
 
-        // --- 結帳與歷史紀錄 ---
-        async function showCartDetails() {
-            if(confirm("確定要送出訂單嗎？")) {
-                const profile = await liff.getProfile();
-                const body = {
-                    action: 'submitOrder',
+        async function sendOrder() {
+            if (!confirm("確定送出訂單？")) return;
+            const profile = await liff.getProfile();
+            const res = await fetch(GAS_URL, {
+                method: 'POST',
+                body: JSON.stringify({
                     userId: profile.userId,
                     userName: profile.displayName,
                     cartJson: JSON.stringify(cart)
-                };
-                
-                const resp = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(body) });
-                const result = await resp.json();
-                if(result.status === 'success') {
-                    alert("訂單已送出！單號: " + result.orderId);
-                    cart = {};
-                    updateCartUI();
-                    navTo('history');
-                }
-            }
-        }
-
-        async function loadHistory() {
-            const profile = await liff.getProfile();
-            const resp = await fetch(`${GAS_URL}?action=getHistory&userId=${profile.userId}`);
-            const data = await resp.json();
-            const list = document.getElementById('history-list');
-            if(data.length === 0) {
-                list.innerHTML = "<p style='text-align:center; color:#999; margin-top:20px;'>尚無訂單紀錄</p>";
-                return;
-            }
-            list.innerHTML = data.map(o => `
-                <div style="background:white; padding:15px; border-radius:10px; margin-bottom:10px;">
-                    <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding-bottom:5px; margin-bottom:5px;">
-                        <b style="font-size:12px;">${o.orderId}</b>
-                        <span style="color:var(--line-green); font-size:12px;">${o.status}</span>
-                    </div>
-                    <div style="font-size:14px; color:#555;">${o.details}</div>
-                    <div style="text-align:right; margin-top:5px; font-weight:bold;">總計: $${o.total}</div>
-                </div>
-            `).join('');
+                })
+            });
+            alert("訂單已送出！");
+            cart = {};
+            updateUI();
+            render();
         }
 
         init();
     </script>
 </body>
 </html>
-
