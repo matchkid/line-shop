@@ -149,7 +149,7 @@
     </div>
 
     <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbyVSWEJqCers-P5eAOW6ljgY9w_0WgrDB364dD4D91BxSxvD0nb_-KY7h6BP2lkHofxxQ/exec"; // ⚠️ 請更換
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbyPrHe1HZ_F0gIqe4_7f41srHeec8HvWflUK8v6Q5OTHaOgWhrX5knlO0MGxfuG2FfQCg/exec"; // ⚠️ 請更換
         const LIFF_ID = "2009084382-z4lJ5Lc6"; // ⚠️ 請更換
         const BANK_ACC = "903241863"; // ⚠️ 請設定您的帳號
 
@@ -228,12 +228,16 @@
 
             list.innerHTML = chunk.map(p => {
                 const qty = cart[p.name] ? cart[p.name].qty : 0;
-                const nameHtml = p.link ? `<a href="${p.link}" target="_blank" class="p-link">${p.name} 🔗</a>` : `<b>${p.name}</b>`;
+                // 1. 處理連結邏輯
+        const nameHtml = p.link ? `<a href="${p.link}" target="_blank" class="p-link">${p.name} 🔗</a>` : `<b>${p.name}</b>`;
+        
+        // 2. 處理斜線備註邏輯 (如果有備註才顯示)
+        const noteHtml = p.note ? `<div style="font-size:12px; color:#888; font-style:italic; margin-top:2px;">/ ${p.note}</div>` : '';
                 return `
                 <div class="p-card">
                     <img class="p-img" src="${p.img || 'https://via.placeholder.com/70'}">
                     <div class="p-details">
-                        ${nameHtml}
+                        ${nameHtml} ${noteHtml}  <span class="p-price">$${p.price}</span>
                         <span class="p-price">$${p.price}</span>
                     </div>
                     <div class="qty-box">
@@ -370,5 +374,6 @@
     </script>
 </body>
 </html>
+
 
 
