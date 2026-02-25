@@ -187,7 +187,7 @@
         <div class="sticky-header">
             <div class="header-main">
                 <div class="header-title" id="pageTitle">喜幼 微商城</div>
-                <div style="font-size: 12px; color: #888;" onclick="showHistory()">📋 紀錄</div>
+                <div style="font-size: 12px; color: #888;" onclick="showHistory()">📋 訂單紀錄</div>
             </div>
             
             <div class="search-container">
@@ -249,7 +249,7 @@
     </div>
 
     <script>
-        const GAS_URL = "你的GAS佈署網址"; // ⚠️ 請更換
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbxRBRYk4dXvXd98KhIRHYez3k-xzl44kRAgZOXtEZ6DmuASJESDD90cB2GqP35TopQzqg/exec"; // ⚠️ 請更換
         let allProducts = [];
         let filteredProducts = [];
         let cart = {};
@@ -260,7 +260,7 @@
         // --- 初始化 ---
         async function init() {
             try {
-                await liff.init({ liffId: "你的LIFF_ID" }); // ⚠️ 請更換
+                await liff.init({ liffId: "2009084382-z4lJ5Lc6" }); // ⚠️ 請更換
                 if (!liff.isLoggedIn()) { liff.login(); return; }
                 
                 // 向 GAS 抓取資料
@@ -464,3 +464,4 @@
     </script>
 </body>
 </html>
+
