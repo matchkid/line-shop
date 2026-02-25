@@ -80,6 +80,10 @@
                     <img src="https://via.placeholder.com/150x110?text=Product+B">
                     <div style="padding:5px; text-align:center; font-size:12px;">商品B <b style="color:red;">$320</b></div>
                 </div>
+                <div class="feat-card" onclick="updateCart('推薦商品C', 320, 1)">
+                    <img src="https://via.placeholder.com/150x110?text=Product+B">
+                    <div style="padding:5px; text-align:center; font-size:12px;">商品B <b style="color:red;">$320</b></div>
+                </div>
             </div>
             <div class="text-info">
                 <b>📢 購物小提醒</b><br>
@@ -117,7 +121,7 @@
             const profile = await liff.getProfile();
             user = { userId: profile.userId, userName: profile.displayName };
 
-            // 1. 檢查註冊 (修復)
+            // 1. 檢查註冊 
             const check = await fetch(`${GAS_URL}?action=checkUser&userId=${user.userId}`).then(res => res.json());
             if (!check.registered) {
                 document.getElementById('reg-modal').classList.remove('hidden');
@@ -198,6 +202,31 @@
             alert("註冊成功！");
             document.getElementById('reg-modal').classList.add('hidden');
         }
+        // --- 購物車邏輯 ---
+        function updateQty(name, price, delta) {
+            if (!cart[name]) cart[name] = { price: price, qty: 0 };
+            cart[name].qty += delta;
+            if (cart[name].qty <= 0) delete cart[name];
+            updateUI();
+            render();
+        }
+
+        function quickAdd(name, price) {
+            updateQty(name, price, 1);
+            alert("已加入購物車: " + name);
+        }
+
+        function updateUI() {
+            let count = 0, total = 0;
+            for (let k in cart) {
+                count += cart[k].qty;
+                total += cart[k].qty * cart[k].price;
+            }
+            const bar = document.getElementById('cartBar');
+            bar.style.display = count > 0 ? 'flex' : 'none';
+            document.getElementById('cartCount').innerText = count;
+            document.getElementById('cartTotal').innerText = total;
+        }
 
         async function sendOrder() {
             if(!confirm("確定送出訂單？")) return;
@@ -212,3 +241,4 @@
     </script>
 </body>
 </html>
+
