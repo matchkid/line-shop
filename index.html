@@ -169,48 +169,103 @@
         let currentUser = null;
 
         // --- 初始化 ---
-        async function init() {
-            await liff.init({ liffId: LIFF_ID });
-            if (!liff.isLoggedIn()) { liff.login(); return; }
-            const profile = await liff.getProfile();
-            currentUser = { id: profile.userId, name: profile.displayName };
-            
-            // 抓商品資料
-            const res = await fetch(GAS_URL);
-            allProducts = await res.json();
-            displayList = allProducts;
-            
-            initCategories();
-            checkRegister(); // ⚠️ 檢查用戶是否已註冊
+        // --- 1. 初始化優化：並行處理 (速度提升關鍵) ---
+async function init() {
+    // 顯示全螢幕載入中，避免白屏
+    showLoading(true);
+
+    try {
+        await liff.init({ liffId: LIFF_ID });
+        if (!liff.isLoggedIn()) { liff.login(); return; }
+        
+        const profile = await liff.getProfile();
+        currentUser = { id: profile.userId, name: profile.displayName };
+
+        // 🔥 同時執行：抓商品 + 檢查註冊 (不再排隊)
+        const [prodRes, regStatus] = await Promise.all([
+            fetch(GAS_URL).then(res => res.json()),
+            checkRegisterFast(profile.userId)
+        ]);
+
+        allProducts = prodRes;
+        displayList = allProducts;
+        initCategories();
+        renderProducts();
+
+        // 如果沒註冊，彈出視窗
+        if (!regStatus) {
+            document.getElementById('regModal').classList.remove('hidden');
         }
 
-        // --- 註冊邏輯 ---
-        async function checkRegister() {
-            const res = await fetch(`${GAS_URL}?action=checkUser&userId=${currentUser.id}`);
-            const data = await res.json();
-            // 💡 如果資料庫沒紀錄，彈出註冊窗
-            if (!data.registered) {
-                document.getElementById('regModal').classList.remove('hidden');
-            }
+    } catch (err) {
+        console.error("Init Error:", err);
+    } finally {
+        showLoading(false); // 關閉載入中
+    }
+}
+
+// --- 2. 快速檢查註冊：利用 LocalStorage 緩存 ---
+async function checkRegisterFast(userId) {
+    // 優先看手機有沒有記過「已註冊」
+    if (localStorage.getItem(`isReg_${userId}`) === 'true') {
+        return true; 
+    }
+
+    // 手機沒紀錄才問 GAS
+    const res = await fetch(`${GAS_URL}?action=checkUser&userId=${userId}`);
+    const data = await res.json();
+    
+    if (data.registered) {
+        localStorage.setItem(`isReg_${userId}`, 'true'); // 記在手機裡
+        return true;
+    }
+    return false;
+}
+
+// --- 3. 註冊成功後立即緩存 ---
+async function submitRegister() {
+    const name = document.getElementById('regName').value;
+    const phone = document.getElementById('regPhone').value;
+    const addr = document.getElementById('regAddr').value;
+
+    if (!name || !phone || !addr) { alert("請填寫完整資訊"); return; }
+    
+    showLoading(true, "資料存檔中...");
+
+    const payload = { action: 'register', userId: currentUser.id, userName: name, phone: phone, address: addr };
+    try {
+        const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const r = await res.json();
+        
+        if (r.status === 'success') {
+            localStorage.setItem(`isReg_${currentUser.id}`, 'true'); // 記在手機
+            document.getElementById('regModal').classList.add('hidden');
+            alert("註冊成功！歡迎購物");
         }
+    } catch (e) {
+        alert("註冊失敗，請稍後再試");
+    } finally {
+        showLoading(false);
+    }
+}
 
-        async function submitRegister() {
-            const name = document.getElementById('regName').value;
-            const phone = document.getElementById('regPhone').value;
-            const addr = document.getElementById('regAddr').value;
-
-            if (!name || !phone || !addr) { alert("請填寫完整資訊"); return; }
-
-            const payload = { action: 'register', userId: currentUser.id, userName: name, phone: phone, address: addr };
-            const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-            const r = await res.json();
-            
-            if (r.status === 'success') {
-                alert("註冊成功！歡迎購物");
-                document.getElementById('regModal').classList.add('hidden');
-            }
-        }
-
+// --- 4. 輔助函式：載入中提示 ---
+function showLoading(show, text = "載入商品中...") {
+    let loader = document.getElementById('globalLoader');
+    if (!loader) {
+        loader = document.createElement('div');
+        loader.id = 'globalLoader';
+        loader.style = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.9);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;";
+        loader.innerHTML = `<div class="spinner"></div><p id="loaderText" style="margin-top:10px;color:#666;">${text}</p>`;
+        // 加入簡單 CSS
+        const style = document.createElement('style');
+        style.innerHTML = `.spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #06C755; border-radius: 50%; animation: spin 1s linear infinite; } @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`;
+        document.head.appendChild(style);
+        document.body.appendChild(loader);
+    }
+    loader.style.display = show ? 'flex' : 'none';
+    document.getElementById('loaderText').innerText = text;
+}
         // --- 商品與導覽功能 (保留原有邏輯) ---
         function initCategories() {
             const rawCats = allProducts.map(p => p.category);
@@ -359,4 +414,5 @@
     </script>
 </body>
 </html>
+
 
