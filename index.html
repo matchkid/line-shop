@@ -208,16 +208,16 @@
         }
 
         // --- 視圖與渲染 ---
-        function switchTab(tab) {
+      //  function switchTab(tab) {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(`tab-${tab}`).classList.add('active');
             document.getElementById('view-home').classList.add('hidden');
             document.getElementById('view-cat').classList.add('hidden');
             document.getElementById('view-hist').classList.add('hidden');
 
-            if (tab === 'home') document.getElementById('view-home').classList.remove('hidden');
-            if (tab === 'cat') { document.getElementById('view-cat').classList.remove('hidden'); renderProducts(); }
-            if (tab === 'hist') { document.getElementById('view-hist').classList.remove('hidden'); loadHistory(); }
+        //    if (tab === 'home') document.getElementById('view-home').classList.remove('hidden');
+        //    if (tab === 'cat') { document.getElementById('view-cat').classList.remove('hidden'); renderProducts(); }
+        //    if (tab === 'hist') { document.getElementById('view-hist').classList.remove('hidden'); loadHistory(); }
             window.scrollTo(0,0);
         }
 
@@ -332,6 +332,52 @@
             });
         }
 
+        // 修改購物車顯示函式
+function showCart() {
+    const list = document.getElementById('cartList');
+    list.innerHTML = '';
+    let total = 0;
+    let hasItem = false;
+
+    for (let name in cart) {
+        hasItem = true;
+        const item = cart[name];
+        const subtotal = item.price * item.qty;
+        total += subtotal;
+
+        // 💡 在購物車清單中加入 +- 按鈕
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'p-card';
+        itemDiv.style.marginBottom = '10px';
+        itemDiv.innerHTML = `
+            <div class="p-details">
+                <b>${name}</b>
+                <span class="p-price">$${item.price} / 小計: $${subtotal}</span>
+            </div>
+            <div class="qty-box">
+                <div class="qty-btn" onclick="updateCartInCart('${name}', ${item.price}, -1)">-</div>
+                <span class="qty-val">${item.qty}</span>
+                <div class="qty-btn" onclick="updateCartInCart('${name}', ${item.price}, 1)">+</div>
+            </div>
+        `;
+        list.appendChild(itemDiv);
+    }
+
+    if (!hasItem) {
+        list.innerHTML = '<p style="text-align:center; color:#888;">🛒 購物車是空的</p>';
+    }
+
+    const shipping = (total >= 8000 || total === 0) ? 0 : 100;
+    document.getElementById('cartTotal').innerText = `商品總計: $${total} / 運費: $${shipping} / 總金額: $${total + shipping}`;
+    document.getElementById('modalCart').style.display = 'flex';
+}
+
+// 💡 專為購物車內設計的更新函式
+function updateCartInCart(name, price, delta) {
+    updateCart(name, price, delta); // 調用原本的加減邏輯
+    showCart(); // 💡 關鍵：加減後立刻重新繪製購物車明細，不用關閉視窗
+}
+
         function finishOrder() {
             document.getElementById('successModal').classList.add('hidden');
             switchTab('hist'); // 跳轉到歷史紀錄
@@ -376,6 +422,7 @@
     </script>
 </body>
 </html>
+
 
 
 
