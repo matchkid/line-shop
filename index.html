@@ -208,16 +208,16 @@
         }
 
         // --- 視圖與渲染 ---
-      //  function switchTab(tab) {
+        function switchTab(tab) {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(`tab-${tab}`).classList.add('active');
             document.getElementById('view-home').classList.add('hidden');
             document.getElementById('view-cat').classList.add('hidden');
             document.getElementById('view-hist').classList.add('hidden');
 
-        //    if (tab === 'home') document.getElementById('view-home').classList.remove('hidden');
-        //    if (tab === 'cat') { document.getElementById('view-cat').classList.remove('hidden'); renderProducts(); }
-        //    if (tab === 'hist') { document.getElementById('view-hist').classList.remove('hidden'); loadHistory(); }
+            if (tab === 'home') document.getElementById('view-home').classList.remove('hidden');
+            if (tab === 'cat') { document.getElementById('view-cat').classList.remove('hidden'); renderProducts(); }
+           if (tab === 'hist') { document.getElementById('view-hist').classList.remove('hidden'); loadHistory(); }
             window.scrollTo(0,0);
         }
 
@@ -422,6 +422,7 @@ function updateCartInCart(name, price, delta) {
     </script>
 </body>
 </html>
+
 
 
 
