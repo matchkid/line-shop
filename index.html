@@ -61,7 +61,14 @@
     </style>
 </head>
 <body>
+<div id="loadingOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+    <div style="width:40px; height:40px; border:4px solid #f3f3f3; border-top:4px solid #06C755; border-radius:50%; animation: spin 1s linear infinite;"></div>
+    <p style="color:#666; margin-top:10px;">店小二趕工中...</p>
+</div>
 
+<style>
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+</style>
     <div class="fixed-header">
         <div class="search-area">
             <input type="text" id="searchInput" class="search-input" placeholder="🔍 搜尋商品..." oninput="doSearch()">
@@ -161,7 +168,7 @@
     </div>
 
     <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbxA0orWqV0evidtMpVApbr9CO34UC5RcAPSkM98VpVSAhUmK-KXhl1TLHDZG1CRRRc5ZQ/exec"; 
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbx37yoU-QIfUEPOtPfUYm2BY3rIgUxziKO0HMXtv9Q-no8h9X_nI46dkLkG-e3kQxkHXg/exec"; 
         const LIFF_ID = "2009084382-z4lJ5Lc6"; 
 
         let allProducts = [], displayList = [], cart = {};
@@ -170,39 +177,45 @@
 
         // --- 初始化 ---
         // --- 1. 初始化優化：並行處理 (速度提升關鍵) ---
+        // --- 優化後的初始化 ---
 async function init() {
-    // 顯示全螢幕載入中，避免白屏
-    showLoading(true);
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) { liff.login(); return; }
+    const profile = await liff.getProfile();
+    currentUser = { id: profile.userId, name: profile.displayName };
+
+    // 💡 第一招：檢查手機本地有沒有註冊紀錄
+    const localReg = localStorage.getItem('isRegistered_' + currentUser.id);
+    
+    // 💡 第二招：一次抓完所有資料
+    // 如果本地已經知道註冊了，改抓普通清單；如果不知道，抓 init 組合包
+    const fetchUrl = localReg 
+        ? GAS_URL 
+        : `${GAS_URL}?action=init&userId=${currentUser.id}`;
 
     try {
-        await liff.init({ liffId: LIFF_ID });
-        if (!liff.isLoggedIn()) { liff.login(); return; }
-        
-        const profile = await liff.getProfile();
-        currentUser = { id: profile.userId, name: profile.displayName };
+        const res = await fetch(fetchUrl);
+        const data = await res.json();
 
-        // 🔥 同時執行：抓商品 + 檢查註冊 (不再排隊)
-        const [prodRes, regStatus] = await Promise.all([
-            fetch(GAS_URL).then(res => res.json()),
-            checkRegisterFast(profile.userId)
-        ]);
-
-        allProducts = prodRes;
-        displayList = allProducts;
-        initCategories();
-        renderProducts();
-
-        // 如果沒註冊，彈出視窗
-        if (!regStatus) {
-            document.getElementById('regModal').classList.remove('hidden');
+        if (localReg) {
+            allProducts = data; // 舊模式回傳的是陣列
+        } else {
+            allProducts = data.products; // 新模式回傳的是物件
+            if (data.registered) {
+                localStorage.setItem('isRegistered_' + currentUser.id, 'true');
+            } else {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
         }
 
-    } catch (err) {
-        console.error("Init Error:", err);
-    } finally {
-        showLoading(false); // 關閉載入中
+        displayList = allProducts;
+        initCategories();
+        renderProducts(); // 立即渲染，不要等 tab 切換
+    } catch (e) {
+        console.error("載入失敗", e);
     }
 }
+
 
 // --- 2. 快速檢查註冊：利用 LocalStorage 緩存 ---
 async function checkRegisterFast(userId) {
@@ -238,8 +251,9 @@ async function submitRegister() {
         const r = await res.json();
         
         if (r.status === 'success') {
-            localStorage.setItem(`isReg_${currentUser.id}`, 'true'); // 記在手機
-            document.getElementById('regModal').classList.add('hidden');
+        localStorage.setItem('isRegistered_' + currentUser.id, 'true'); // 💡 註冊成功立刻存手機
+        alert("註冊成功！");
+        document.getElementById('regModal').classList.add('hidden');
             alert("註冊成功！歡迎購物");
         }
     } catch (e) {
@@ -414,5 +428,6 @@ function showLoading(show, text = "載入商品中...") {
     </script>
 </body>
 </html>
+
 
 
