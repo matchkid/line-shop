@@ -41,7 +41,7 @@
         .qty-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid #ddd; background: white; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .qty-val { margin: 0 8px; font-weight: bold; min-width: 20px; text-align: center; }
 
-        /* 3. 歷史紀錄 */
+        /* 3. 歷史紀錄樣式 */
         .history-card { background: white; margin: 10px 15px; padding: 15px; border-radius: 8px; border-left: 4px solid #ddd; }
         .history-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; font-size: 14px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
         .hist-item-row { display: flex; justify-content: space-between; font-size: 13px; color: #555; margin-bottom: 6px; }
@@ -119,10 +119,11 @@
     <div id="cartModal" class="modal-overlay hidden">
         <div class="modal-content">
             <h3 style="margin-top:0;">📋 購物車確認</h3>
-            <div id="modalItems">
-                </div>
-            <div id="modalTotalArea" style="text-align:right; margin-top:15px; font-weight:bold; font-size:14px; color:#555;">
-                </div>
+            <div id="modalItems"></div>
+            <div id="modalShippingInfo" style="text-align:right; margin-top:10px; font-size:13px; color:#666;"></div>
+            <div style="text-align:right; margin-top:5px; font-weight:bold; font-size:18px; color:#e44d26;">
+                總計: $<span id="modalTotal">0</span>
+            </div>
             <button class="btn-submit" onclick="submitOrder()">確認送出訂單</button>
             <button class="btn-close" onclick="closeCartModal()">繼續購物</button>
         </div>
@@ -133,7 +134,7 @@
             <div class="success-box">
                 <div style="font-size:50px;">🎉</div>
                 <h2 style="color:var(--line-green);">訂單已送出！</h2>
-                <p>請於 24 小時內完成匯款，謝謝您。</p>
+                <p>匯款完成後請截圖或告知帳號後5碼，以利核對，謝謝。</p>
                 <div class="bank-info">
                     <b>街口支付 (396)</b><br>
                     帳號：<span id="bankAccNumber">903241863</span> 
@@ -153,20 +154,19 @@
         let currentPage = 1, pageSize = 10;
         let currentUser = null;
 
-        document.getElementById('bankAccNumber').innerText = BANK_ACC;
-
         async function init() {
             await liff.init({ liffId: LIFF_ID });
             if (!liff.isLoggedIn()) { liff.login(); return; }
             const profile = await liff.getProfile();
             currentUser = { id: profile.userId, name: profile.displayName };
             
+            // 抓取商品資料
             const res = await fetch(GAS_URL);
             allProducts = await res.json();
             displayList = allProducts;
             
             initCategories();
-            checkRegister();
+            checkRegister(); // 靜默檢查註冊
         }
 
         async function checkRegister() {
@@ -217,7 +217,7 @@
             window.scrollTo(0,0);
         }
 
-        // --- 商品渲染 (含斜線備註與連結) ---
+        // --- 商品渲染 ---
         function renderProducts() {
             const list = document.getElementById('catList');
             const start = (currentPage - 1) * pageSize;
@@ -225,11 +225,9 @@
 
             list.innerHTML = chunk.map(p => {
                 const qty = cart[p.name] ? cart[p.name].qty : 0;
-                // 處理連結
                 const nameHtml = p.link ? `<a href="${p.link}" target="_blank" class="p-link">${p.name} 🔗</a>` : `<b>${p.name}</b>`;
-                // 處理斜線備註
                 const noteHtml = p.note ? `<div style="font-size:12px; color:#888; font-style:italic; margin-top:2px;">/ ${p.note}</div>` : '';
-
+                
                 return `
                 <div class="p-card">
                     <img class="p-img" src="${p.img || 'https://via.placeholder.com/70'}">
@@ -257,20 +255,14 @@
             window.scrollTo(0,0);
         }
 
-        // --- 核心購物邏輯 ---
+        // --- 核心購物車邏輯 ---
         function updateCart(name, price, d) {
             if(!cart[name]) cart[name] = { price, qty: 0 };
             cart[name].qty += d;
             if(cart[name].qty <= 0) delete cart[name];
             updateCartBar();
-            // 如果當前在商品清單頁面，同步更新畫面上的數字
+            // 如果目前正在目錄頁，同步更新列表上的數字
             if(!document.getElementById('view-cat').classList.contains('hidden')) renderProducts();
-        }
-
-        // 購物車明細內的加減功能 (修正點)
-        function updateCartInModal(name, price, d) {
-            updateCart(name, price, d);
-            renderCartModal(); // 立即重新渲染彈窗內容
         }
 
         function quickAdd(name, price) {
@@ -279,153 +271,135 @@
         }
 
         function updateCartBar() {
-            let c = 0;
-            for(let k in cart) c += cart[k].qty;
+            let count = 0;
+            for(let k in cart) count += cart[k].qty;
             const bar = document.getElementById('cartBar');
-            if(c > 0) {
+            if(count > 0) {
                 bar.classList.remove('hidden');
-                document.getElementById('barCount').innerText = c;
-            } else { 
-                bar.classList.add('hidden');
-                closeCartModal(); // 如果減到沒東西，自動關閉彈窗
-            }
+                document.getElementById('barCount').innerText = count;
+            } else { bar.classList.add('hidden'); }
         }
 
-        // 渲染購物車彈窗明細 (修正點)
-        function renderCartModal() {
+        // --- 購物車彈窗 (含加減按鈕) ---
+        function openCartModal() {
             const box = document.getElementById('modalItems');
-            const totalArea = document.getElementById('modalTotalArea');
-            let h = "", t = 0;
+            box.innerHTML = "";
+            let subtotal = 0;
             let hasItem = false;
 
             for (let n in cart) {
                 hasItem = true;
-                const s = cart[n].price * cart[n].qty;
-                t += s;
-                h += `
-                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #eee;">
+                const itemTotal = cart[n].price * cart[n].qty;
+                subtotal += itemTotal;
+
+                const itemDiv = document.createElement('div');
+                itemDiv.style = "display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #eee;";
+                itemDiv.innerHTML = `
                     <div style="flex:1;">
-                        <div style="font-weight:bold; font-size:14px;">${n}</div>
-                        <div style="color:#e44d26; font-size:12px;">$${cart[n].price} / 小計: $${s}</div>
+                        <div style="font-weight:bold;">${n}</div>
+                        <div style="font-size:12px; color:#e44d26;">$${cart[n].price} / 小計: $${itemTotal}</div>
                     </div>
                     <div class="qty-box">
                         <div class="qty-btn" onclick="updateCartInModal('${n}', ${cart[n].price}, -1)">-</div>
                         <span class="qty-val">${cart[n].qty}</span>
                         <div class="qty-btn" onclick="updateCartInModal('${n}', ${cart[n].price}, 1)">+</div>
                     </div>
-                </div>`;
+                `;
+                box.appendChild(itemDiv);
             }
 
-            box.innerHTML = h || '<p style="text-align:center; color:#999; padding:20px;">購物車空空如也...</p>';
-            
-            // 計算運費 (8000免運)
-            const shipping = (t >= 8000 || t === 0) ? 0 : 100;
-            totalArea.innerHTML = `
-                <div>商品總計: $${t}</div>
-                <div>運費: $${shipping}</div>
-                <div style="font-size:18px; color:#e44d26; margin-top:5px;">應付總額: $${t + shipping}</div>
-            `;
+            if(!hasItem) {
+                box.innerHTML = '<p style="text-align:center; color:#999; padding:20px;">購物車空空的喔！</p>';
+                subtotal = 0;
+            }
+
+            const shipping = (subtotal >= 8000 || subtotal === 0) ? 0 : 100;
+            document.getElementById('modalShippingInfo').innerText = `商品小計: $${subtotal} + 運費: $${shipping}`;
+            document.getElementById('modalTotal').innerText = subtotal + shipping;
+            document.getElementById('cartModal').classList.remove('hidden');
         }
 
-        function openCartModal() {
-            renderCartModal();
-            document.getElementById('cartModal').classList.remove('hidden');
+        // 專為購物車彈窗設計的更新函式
+        function updateCartInModal(name, price, d) {
+            updateCart(name, price, d); // 先更新數據
+            openCartModal(); // 重新渲染視窗內容 (不會關閉視窗)
         }
 
         function closeCartModal() { document.getElementById('cartModal').classList.add('hidden'); }
 
-        // --- 訂單送出 ---
         async function submitOrder() {
-            if(Object.keys(cart).length === 0) return;
+            const count = Object.keys(cart).length;
+            if(count === 0) { alert("購物車內沒有商品喔！"); return; }
             if(!confirm("確定送出訂單？")) return;
             
             const btn = document.querySelector('.btn-submit');
-            btn.innerText = "訂單處理中...";
+            btn.innerText = "處理中...";
             btn.disabled = true;
             
+            const payload = { userId: currentUser.id, userName: currentUser.name, cartJson: JSON.stringify(cart) };
             try {
-                const payload = { 
-                    action: 'order', // 增加動作識別
-                    userId: currentUser.id, 
-                    userName: currentUser.name, 
-                    cartJson: JSON.stringify(cart) 
-                };
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const r = await res.json();
-                
                 if(r.status === 'success') {
                     closeCartModal();
                     document.getElementById('successModal').classList.remove('hidden');
-                    // 同步發送 LINE 訊息給使用者
+                    // 發送訂單摘要給使用者
                     await liff.sendMessages([{ type: 'text', text: r.msg }]);
                     cart = {};
                     updateCartBar();
                 } else {
-                    alert("訂單送出失敗：" + r.message);
+                    alert("下單失敗：" + r.message);
                 }
-            } catch (e) {
-                alert("網路異常，請稍後再試");
-            } finally {
-                btn.innerText = "確認送出訂單";
-                btn.disabled = false;
+            } catch(e) {
+                alert("網路錯誤，請稍後再試");
             }
+            btn.innerText = "確認送出訂單";
+            btn.disabled = false;
         }
 
-        // --- 輔助功能 ---
         function copyBank() {
-            const el = document.createElement('textarea');
-            el.value = BANK_ACC;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-            alert("已複製帳號：" + BANK_ACC);
+            navigator.clipboard.writeText(BANK_ACC).then(() => { alert("已複製匯款帳號！"); });
         }
 
         function finishOrder() {
             document.getElementById('successModal').classList.add('hidden');
-            switchTab('hist'); // 下單完成後自動導向歷史紀錄
+            switchTab('hist'); // 下單完導向歷史紀錄
         }
 
         // --- 歷史紀錄渲染 ---
         async function loadHistory() {
             const list = document.getElementById('histList');
-            list.innerHTML = '<div style="text-align:center; padding:20px;">正在讀取您的訂單...</div>';
+            list.innerHTML = '<div style="text-align:center; padding:20px;">載入中...</div>';
             
-            try {
-                const res = await fetch(`${GAS_URL}?action=getHistory&userId=${currentUser.id}`);
-                const data = await res.json();
-                
-                if(!data || data.length === 0) {
-                    list.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">目前尚無訂單紀錄</div>';
-                    return;
-                }
-
-                list.innerHTML = data.map(o => `
-                    <div class="history-card">
-                        <div class="history-header">
-                            <span>📅 ${o.date}</span>
-                            <span>單號: ${o.id.slice(-6)}</span>
-                        </div>
-                        <div>
-                            ${o.items.map(i => `
-                                <div class="hist-item-row">
-                                    <span>${i.name} x${i.qty}</span>
-                                    <span class="status-badge" data-status="${i.itemStatus}">${i.itemStatus}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <div style="text-align:right; font-weight:bold; color:#e44d26; margin-top:8px; border-top:1px solid #eee; padding-top:5px;">
-                            實付總計: $${o.total}
-                        </div>
-                    </div>
-                `).join('');
-            } catch (e) {
-                list.innerHTML = '<div style="text-align:center; padding:20px; color:red;">讀取紀錄失敗，請稍後再試</div>';
+            const res = await fetch(`${GAS_URL}?action=getHistory&userId=${currentUser.id}`);
+            const data = await res.json();
+            
+            if(!data || data.length === 0) {
+                list.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">目前沒有訂單紀錄</div>';
+                return;
             }
+
+            list.innerHTML = data.map(o => `
+                <div class="history-card">
+                    <div class="history-header">
+                        <span>${o.date}</span>
+                        <span>單號: ${o.id.slice(-6)}</span>
+                    </div>
+                    <div>
+                        ${o.items.map(i => `
+                            <div class="hist-item-row">
+                                <span>${i.name} x${i.qty}</span>
+                                <span class="status-badge" data-status="${i.itemStatus}">${i.itemStatus}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="text-align:right; font-weight:bold; color:#e44d26; margin-top:8px; border-top:1px solid #eee; padding-top:5px;">
+                        運費: $${o.shipping} / 總計: $${o.total}
+                    </div>
+                </div>
+            `).join('');
         }
 
-        // 初始化 LIFF
         init();
     </script>
 </body>
