@@ -89,11 +89,11 @@
             <div class="feat-grid">
                 <div class="feat-item" onclick="quickAdd('精選商品A', 490)">
                     <img src="https://via.placeholder.com/200x150?text=Hot+Sale">
-                    <div class="feat-info">精選商品A<br><b style="color:red">$490</b></div>
+                    <div class="feat-info">精選商品A<br><b style="color:red">$4900</b></div>
                 </div>
                 <div class="feat-item" onclick="quickAdd('精選商品B', 320)">
                     <img src="https://via.placeholder.com/200x150?text=New+Item">
-                    <div class="feat-info">精選商品B<br><b style="color:red">$320</b></div>
+                    <div class="feat-info">精選商品B<br><b style="color:red">$3020</b></div>
                 </div>
             </div>
             <div class="info-box">
@@ -195,7 +195,7 @@
         }
 
         // --- 註冊邏輯 ---
-        async function checkRegister() {
+        //async function checkRegister() {
             const res = await fetch(`${GAS_URL}?action=checkUser&userId=${currentUser.id}`);
             const data = await res.json();
             // 💡 如果資料庫沒紀錄，彈出註冊窗
@@ -204,7 +204,7 @@
             }
         }
 
-        async function submitRegister() {
+        //async function submitRegister() {
             const name = document.getElementById('regName').value;
             const phone = document.getElementById('regPhone').value;
             const addr = document.getElementById('regAddr').value;
@@ -372,4 +372,5 @@
     </script>
 </body>
 </html>
+
 
