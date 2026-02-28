@@ -195,7 +195,7 @@
         }
 
         // --- 註冊邏輯 ---
-        //async function checkRegister() {
+        async function checkRegister() {
             const res = await fetch(`${GAS_URL}?action=checkUser&userId=${currentUser.id}`);
             const data = await res.json();
             // 💡 如果資料庫沒紀錄，彈出註冊窗
@@ -372,6 +372,7 @@
     </script>
 </body>
 </html>
+
 
 
 
