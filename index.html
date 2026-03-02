@@ -19,7 +19,7 @@
         .nav-btn.active { color: var(--line-green); border-bottom: 3px solid var(--line-green); font-weight: bold; }
 
         /* 內容容器 */
-        .main-content { padding-top: 85px; padding-bottom: 80px; } /* 這裡改小一點，讓內容往上 */
+        .main-content { padding-top: 100px; padding-bottom: 100px; } /* 這裡改小一點，讓內容往上 */
 
         /* 2. 商品卡片與分類樣式 */
         .section-title { padding: 15px 15px 5px; font-weight: bold; font-size: 16px; display: block; }
@@ -68,12 +68,10 @@
         /* 分頁 */
         .pager { text-align: center; padding: 15px; }
         .pager button { padding: 5px 15px; margin: 0 5px; background: white; border: 1px solid #ddd; border-radius: 5px; }
-/* 修改: 移除列表容器的上方間距 */
-#catList, #histList {
-    margin-top: 0 !important; 
-    padding-top: 5px !important; /* 稍微留一點點呼吸空間就好 */
+        /* 修改: 移除列表容器的上方間距 */
+        #catList, #histList {margin-top: 0 !important; padding-top: 5px !important; /* 稍微留一點點呼吸空間就好 */
 }
-        
+
     </style>
 </head>
 <body>
@@ -461,6 +459,7 @@ function renderHistoryFromMemory() {
     </script>
 </body>
 </html>
+
 
 
 
