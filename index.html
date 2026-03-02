@@ -171,10 +171,11 @@
     </div>
 
     <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbyUBhx4qVf8s0WebCo03tEO1v89Mq9yUuxTAnyctUElID_cv_R5T1_IYRv2gZHSNAN5/exec"; 
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbyV0d4Mfw2C190XRTaZYrFv9iIg-6XG4Ed17tUlsdoOxxAA-O98C5dXo-1UflMrvXVgJw/exec"; 
         const LIFF_ID = "2009084382-z4lJ5Lc6"; 
 
         let allProducts = [], displayList = [], cart = {};
+        let myHistory = []; // 🔥 新增：存歷史紀錄用
         let currentPage = 1, pageSize = 10;
         let currentUser = null;
 
@@ -183,18 +184,15 @@
 async function init() {
     try {
         await liff.init({ liffId: LIFF_ID });
-        if (!liff.isLoggedIn()) { 
-            liff.login(); 
-            return; 
-        }
+        if (!liff.isLoggedIn()) { liff.login(); return; }
         
         const profile = await liff.getProfile();
         currentUser = { id: profile.userId, name: profile.displayName };
         
-        // 顯示載入中... (建議在 HTML 加一個 loading div，這邊簡化處理)
+        // 顯示載入中
         document.getElementById('catList').innerHTML = '<div style="padding:20px;text-align:center;">正在載入商品...</div>';
 
-        // 🔥 關鍵修正：只發送一次請求，帶上 action=init 和 userId
+        // 🔥 只發一次請求，一次拿回所有資料
         const res = await fetch(`${GAS_URL}?action=init&userId=${currentUser.id}`);
         const data = await res.json();
         
@@ -202,31 +200,51 @@ async function init() {
         if (data.products) {
             allProducts = data.products;
             displayList = allProducts;
-            
-            // 初始化分類並選中「全部」
             initCategories();
+            document.getElementById('catBar').firstElementChild.click(); // 預設點擊第一個分類
             
-            // 🔥 關鍵修正：資料載入後，立刻渲染畫面，不用等切換 Tab
-            // 如果當前在 'home' 頁，這行沒影響；如果在 'cat' 頁會立刻看到東西
-            // 但為了讓搜尋功能和分類功能正常，這裡必須先執行一次渲染邏輯
-            document.getElementById('catBar').firstElementChild.click(); 
+            // 🔥 新增：渲染首頁推薦商品
+            renderFeatured();
         }
 
-        // 2. 處理註冊彈窗
-        // 如果 registered 為 false，顯示註冊視窗
+        // 2. 處理歷史紀錄 (存入變數，不顯示)
+        if (data.history) {
+            myHistory = data.history;
+        }
+
+        // 3. 處理註冊
         if (data.registered === false) {
             document.getElementById('regModal').classList.remove('hidden');
-            // 自動填入 LINE 暱稱
-            document.getElementById('regName').value = currentUser.name; 
+            document.getElementById('regName').value = currentUser.name;
         }
 
     } catch (err) {
-        alert("系統載入失敗，請檢查網路或是重新整理。\n" + err);
-        console.error(err);
+        alert("載入失敗：" + err);
     }
+}    
+// 🔥 新增：渲染首頁推薦商品
+function renderFeatured() {
+    // 篩選邏輯：Note 欄位包含 "推薦" 或 "HOT" (不分大小寫)
+    const featItems = allProducts.filter(p => 
+        p.note && (p.note.includes('推薦') || p.note.toUpperCase().includes('HOT'))
+    );
+    
+    // 如果沒有設定推薦，就預設抓前 2 筆，避免首頁開天窗
+    const itemsToShow = featItems.length > 0 ? featItems : allProducts.slice(0, 2);
+
+    const container = document.querySelector('.feat-grid');
+    container.innerHTML = itemsToShow.map(p => `
+        <div class="feat-item" onclick="quickAdd('${p.name}', ${p.price})">
+            <img src="${p.img || 'https://via.placeholder.com/200x150?text=No+Img'}">
+            <div class="feat-info">${p.name}<br><b style="color:red">$${p.price}</b></div>
+        </div>
+    `).join('');
 }
-
-
+// 🔥 修改：快速加入購物車 (原本首頁的 onclick 會報錯，因為沒定義 quickAdd)
+function quickAdd(name, price) {
+    updateCart(name, price, 1);
+    alert(`已將 ${name} 加入購物車！`);
+}
         async function submitRegister() {
             const name = document.getElementById('regName').value;
             const phone = document.getElementById('regPhone').value;
@@ -270,17 +288,49 @@ async function init() {
             currentPage = 1; renderProducts();
         }
 
-        function switchTab(tab) {
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`tab-${tab}`).classList.add('active');
-            document.getElementById('view-home').classList.add('hidden');
-            document.getElementById('view-cat').classList.add('hidden');
-            document.getElementById('view-hist').classList.add('hidden');
-            if (tab === 'home') document.getElementById('view-home').classList.remove('hidden');
-            if (tab === 'cat') { document.getElementById('view-cat').classList.remove('hidden'); renderProducts(); }
-            if (tab === 'hist') { document.getElementById('view-hist').classList.remove('hidden'); loadHistory(); }
-            window.scrollTo(0,0);
-        }
+       // 🔥 修改：切換 Tab 時，歷史紀錄改為直接讀取變數
+function switchTab(tab) {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(`tab-${tab}`).classList.add('active');
+    
+    document.getElementById('view-home').classList.add('hidden');
+    document.getElementById('view-cat').classList.add('hidden');
+    document.getElementById('view-hist').classList.add('hidden');
+    
+    if (tab === 'home') document.getElementById('view-home').classList.remove('hidden');
+    if (tab === 'cat') { document.getElementById('view-cat').classList.remove('hidden'); renderProducts(); }
+    
+    if (tab === 'hist') { 
+        document.getElementById('view-hist').classList.remove('hidden'); 
+        renderHistoryFromMemory(); // 改呼叫這個
+    }
+    window.scrollTo(0,0);
+}
+// 🔥 新增：直接從記憶體渲染歷史紀錄 (瞬間顯示)
+function renderHistoryFromMemory() {
+    const list = document.getElementById('histList');
+    
+    if(!myHistory || myHistory.length === 0) { 
+        list.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">目前沒有訂單紀錄</div>'; 
+        return; 
+    }
+    
+    list.innerHTML = myHistory.map(o => `
+        <div class="history-card">
+            <div class="history-header"><span>${o.date}</span><span>單號: ${o.id.slice(-6)}</span></div>
+            <div>${o.items.map(i => `
+                <div class="hist-item-row">
+                    <span>${i.name} x${i.qty}</span>
+                    <span class="status-badge" data-status="${i.itemStatus}">${i.itemStatus}</span>
+                </div>`).join('')}
+            </div>
+            <div style="text-align:right; font-weight:bold; color:#e44d26; margin-top:8px; border-top:1px solid #eee; padding-top:5px;">
+                運費: $${o.shipping} / 總計: $${o.total}
+            </div>
+        </div>`).join('');
+}
+        
+        
         // --- 3. 渲染商品 (包含連結邏輯) ---
         function renderProducts() {
             const list = document.getElementById('catList');
@@ -395,6 +445,7 @@ async function init() {
     </script>
 </body>
 </html>
+
 
 
 
