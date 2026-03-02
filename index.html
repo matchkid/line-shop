@@ -171,7 +171,7 @@
     </div>
 
     <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbwUJvRdknxTkVkoX-pFfd_ttswX6Wegitb-Nr5NTjAE86Ox4wasuwb6KYyhaK_XGhcO3A/exec"; 
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbyTYo9wBoIeh_a1p0gG4Q11UT7zdJnOPbSaYlGnYtTDAICCBD17RmzRTVLViIudNn4n5g/exec"; 
         const LIFF_ID = "2009084382-z4lJ5Lc6"; 
 
         let allProducts = [], displayList = [], cart = {};
@@ -179,30 +179,55 @@
         let currentUser = null;
 
         // --- 初始化 ---
-        async function init() {
-            await liff.init({ liffId: LIFF_ID });
-            if (!liff.isLoggedIn()) { liff.login(); return; }
-            const profile = await liff.getProfile();
-            currentUser = { id: profile.userId, name: profile.displayName };
-            
-            // 讀取商品資料
-            const res = await fetch(GAS_URL);
-            allProducts = await res.json();
+        // ... 前面變數宣告保持不變 ...
+
+// --- 初始化 (修正版) ---
+async function init() {
+    try {
+        await liff.init({ liffId: LIFF_ID });
+        if (!liff.isLoggedIn()) { 
+            liff.login(); 
+            return; 
+        }
+        
+        const profile = await liff.getProfile();
+        currentUser = { id: profile.userId, name: profile.displayName };
+        
+        // 顯示載入中... (建議在 HTML 加一個 loading div，這邊簡化處理)
+        document.getElementById('catList').innerHTML = '<div style="padding:20px;text-align:center;">正在載入商品...</div>';
+
+        // 🔥 關鍵修正：只發送一次請求，帶上 action=init 和 userId
+        const res = await fetch(`${GAS_URL}?action=init&userId=${currentUser.id}`);
+        const data = await res.json();
+        
+        // 1. 處理商品
+        if (data.products) {
+            allProducts = data.products;
             displayList = allProducts;
             
+            // 初始化分類並選中「全部」
             initCategories();
-            checkRegister(); // ⚠️ 檢查用戶是否已註冊
+            
+            // 🔥 關鍵修正：資料載入後，立刻渲染畫面，不用等切換 Tab
+            // 如果當前在 'home' 頁，這行沒影響；如果在 'cat' 頁會立刻看到東西
+            // 但為了讓搜尋功能和分類功能正常，這裡必須先執行一次渲染邏輯
+            document.getElementById('catBar').firstElementChild.click(); 
         }
 
-        // --- 註冊邏輯 ---
-        async function checkRegister() {
-            const res = await fetch(`${GAS_URL}?action=checkUser&userId=${currentUser.id}`);
-            const data = await res.json();
-            // 💡 如果資料庫沒紀錄，彈出註冊窗
-            if (!data.registered) {
-                document.getElementById('regModal').classList.remove('hidden');
-            }
+        // 2. 處理註冊彈窗
+        // 如果 registered 為 false，顯示註冊視窗
+        if (data.registered === false) {
+            document.getElementById('regModal').classList.remove('hidden');
+            // 自動填入 LINE 暱稱
+            document.getElementById('regName').value = currentUser.name; 
         }
+
+    } catch (err) {
+        alert("系統載入失敗，請檢查網路或是重新整理。\n" + err);
+        console.error(err);
+    }
+}
+
 
         async function submitRegister() {
             const name = document.getElementById('regName').value;
@@ -372,6 +397,7 @@
     </script>
 </body>
 </html>
+
 
 
 
