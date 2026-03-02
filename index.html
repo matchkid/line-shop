@@ -19,7 +19,7 @@
         .nav-btn.active { color: var(--line-green); border-bottom: 3px solid var(--line-green); font-weight: bold; }
 
         /* 內容容器 */
-        .main-content { padding-top: 100px; padding-bottom: 100px; }
+        .main-content { padding-top: 85px; padding-bottom: 80px; } /* 這裡改小一點，讓內容往上 */
 
         /* 2. 商品卡片與分類樣式 */
         .section-title { padding: 15px 15px 5px; font-weight: bold; font-size: 16px; display: block; }
@@ -29,7 +29,7 @@
         .feat-info { padding: 8px; text-align: center; font-size: 13px; }
         .info-box { background: white; margin: 15px; padding: 15px; border-radius: 8px; border-left: 5px solid var(--line-green); font-size: 14px; line-height: 1.6; color: #555; }
         /* 3. 目錄區塊 (多重分類按鈕) */
-        .cat-scroller { display: flex; gap: 8px; padding: 10px 15px; overflow-x: auto; background: white; white-space: nowrap; border-bottom: 1px solid #f0f0f0; }
+        .cat-scroller { display: flex; gap: 8px; padding: 10px 15px; overflow-x: auto; background: white; white-space: nowrap; border-bottom: 1px solid #f0f0f0;margin-top: 0; }
         .cat-pill { padding: 6px 14px; border-radius: 20px; background: #f0f0f0; font-size: 13px; color: #555; cursor: pointer; }
         .cat-pill.active { background: var(--line-green); color: white; }
         /* 4. 商品列表與連結 */
@@ -68,6 +68,12 @@
         /* 分頁 */
         .pager { text-align: center; padding: 15px; }
         .pager button { padding: 5px 15px; margin: 0 5px; background: white; border: 1px solid #ddd; border-radius: 5px; }
+/* 修改: 移除列表容器的上方間距 */
+#catList, #histList {
+    margin-top: 0 !important; 
+    padding-top: 5px !important; /* 稍微留一點點呼吸空間就好 */
+}
+        
     </style>
 </head>
 <body>
@@ -182,7 +188,17 @@ async function init() {
         
         const profile = await liff.getProfile();
         currentUser = { id: profile.userId, name: profile.displayName };
-        
+        // 🔥 新增：從手機暫存讀取購物車
+const savedCart = localStorage.getItem('myCart');
+if (savedCart) {
+    try {
+        cart = JSON.parse(savedCart);
+        updateCartBar(); // 更新購物車按鈕數字
+    } catch (e) {
+        console.error("購物車資料損毀", e);
+        localStorage.removeItem('myCart');
+    }
+}
         // 顯示載入中
         document.getElementById('catList').innerHTML = '<div style="padding:20px;text-align:center;">正在載入商品...</div>';
 
@@ -363,6 +379,8 @@ function renderHistoryFromMemory() {
             if(!cart[name]) cart[name] = { price, qty: 0 };
             cart[name].qty += d;
             if(cart[name].qty <= 0) delete cart[name];
+            // 🔥 新增：儲存到手機 (只要購物車有變動就存)
+    localStorage.setItem('myCart', JSON.stringify(cart));
             updateCartBar();
             if(!document.getElementById('view-cat').classList.contains('hidden')) renderProducts();
         }
@@ -415,7 +433,10 @@ function renderHistoryFromMemory() {
                 if(r.status === 'success') {
                     closeCartModal(); document.getElementById('successModal').classList.remove('hidden');
                     await liff.sendMessages([{ type: 'text', text: r.msg }]);
-                    cart = {}; updateCartBar();
+                    // 🔥 新增：訂單送出後，清空手機裡的購物車紀錄
+    cart = {}; 
+    localStorage.removeItem('myCart'); // 清除暫存
+    updateCartBar();
                 } else { alert("失敗：" + r.message); }
             } catch(e) { alert("網路錯誤"); }
             btn.innerText = "確認送出訂單"; btn.disabled = false;
@@ -440,6 +461,7 @@ function renderHistoryFromMemory() {
     </script>
 </body>
 </html>
+
 
 
 
