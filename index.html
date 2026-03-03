@@ -11,14 +11,15 @@
         .hidden { display: none !important; }
 
         /* 頂部導覽 */
-        .fixed-header { position: fixed; top: 0; left: 0; right: 0; background: white; z-index: 1000; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .fixed-header { position: -webkit-sticky;position: sticky;  top: 0; left: 0; right: 0; background: white; z-index: 1000; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .search-area { padding: 10px 15px; }
         .search-input { width: 100%; padding: 8px 15px; border-radius: 20px; border: 1px solid #ddd; outline: none; box-sizing: border-box; background: #f9f9f9; }
         .nav-tabs { display: flex; justify-content: space-around; padding-bottom: 0; border-bottom: 1px solid #eee; }
         .nav-btn { flex: 1; padding: 10px; border: none; background: white; font-size: 14px; color: #666; cursor: pointer; border-bottom: 3px solid transparent; }
         .nav-btn.active { color: var(--line-green); border-bottom: 3px solid var(--line-green); font-weight: bold; }
 
-        .main-content { padding-top: 100px; padding-bottom: 100px; }
+        .main-content { padding-top: 0 !important; /* 🔥 歸零！這就是消除白邊的關鍵 */
+    padding-bottom: 80px ;}
 
         /* 商品卡片與樣式 */
         .section-title { padding: 15px 15px 5px; font-weight: bold; font-size: 16px; display: block; }
@@ -27,7 +28,7 @@
         .feat-item img { width: 100%; height: 120px; object-fit: cover; }
         .feat-info { padding: 8px; text-align: center; font-size: 13px; }
         .info-box { background: white; margin: 15px; padding: 15px; border-radius: 8px; border-left: 5px solid var(--line-green); font-size: 14px; line-height: 1.6; color: #555; }
-        .cat-scroller { display: flex; gap: 8px; padding: 10px 15px; overflow-x: auto; background: white; white-space: nowrap; border-bottom: 1px solid #f0f0f0; }
+        .cat-scroller { display: flex; gap: 8px; padding: 10px 15px; overflow-x: auto; background: white; white-space: nowrap; border-bottom: 1px solid #f0f0f0; margin-top: 0 !important; }
         .cat-pill { padding: 6px 14px; border-radius: 20px; background: #f0f0f0; font-size: 13px; color: #555; cursor: pointer; }
         .cat-pill.active { background: var(--line-green); color: white; }
         .p-card { display: flex; background: white; padding: 10px; border-radius: 8px; margin: 10px 15px; align-items: center; }
@@ -57,13 +58,13 @@
         .btn-close { width: 100%; background: #f0f0f0; color: #666; border: none; padding: 10px; border-radius: 10px; font-weight: bold; margin-top: 10px; cursor: pointer; }
         .cart-bar { position: fixed; bottom: 20px; left: 15px; right: 15px; background: #333; color: white; padding: 12px 20px; border-radius: 30px; display: flex; justify-content: space-between; align-items: center; z-index: 2000; cursor: pointer; }
         /* 強制移除列表的上方外距 */
-        #catList, #histList {margin-top: 0 !important;padding-top: 0 !important;}
+        #catList, #histList {margin-top: 0 !important;padding-top: 5px !important;}
         
         #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #06C755; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         /* 分頁 */
-        .pager { text-align: center; padding:20px 15px;margin-bottom: 20px; }
+        .pager { text-align: center; padding: 15px;margin-bottom: 120px !important; /* 🔥 強制加高底部，把按鈕往上頂 */ }
         .pager button { padding: 15px; margin: 0 5px; background: white; border: 1px solid #ddd; border-radius: 5px; }
 
 }
@@ -454,6 +455,7 @@ function renderHistoryFromMemory() {
     </script>
 </body>
 </html>
+
 
 
 
