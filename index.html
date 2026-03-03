@@ -26,13 +26,7 @@
         .feat-item img { width: 100%; height: 120px; object-fit: cover; }
         .feat-info { padding: 8px; text-align: center; font-size: 13px; }
         .info-box { background: white; margin: 15px; padding: 15px; border-radius: 8px; border-left: 5px solid var(--line-green); font-size: 14px; line-height: 1.6; color: #555; }
-        
-        .cat-scroller { margin: 0 !important;
-    padding: 10px 15px !important;
-    background: white;
-    position: sticky;
-    top: 95px; /* 剛好接在 Header 下面 */
-    z-index: 999; }
+        .cat-scroller { display: flex; gap: 8px; padding: 10px 15px; overflow-x: auto; background: white; white-space: nowrap; border-bottom: 1px solid #f0f0f0; }
         .cat-pill { padding: 6px 14px; border-radius: 20px; background: #f0f0f0; font-size: 13px; color: #555; cursor: pointer; }
         .cat-pill.active { background: var(--line-green); color: white; }
         .p-card { display: flex; background: white; padding: 10px; border-radius: 8px; margin: 10px 15px; align-items: center; }
@@ -459,6 +453,7 @@ function renderHistoryFromMemory() {
     </script>
 </body>
 </html>
+
 
 
 
