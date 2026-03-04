@@ -17,7 +17,7 @@
         .nav-tabs { display: flex; justify-content: space-around; padding-bottom: 0; border-bottom: 1px solid #eee; }
         .nav-btn { flex: 1; padding: 10px; border: none; background: white; font-size: 14px; color: #666; cursor: pointer; border-bottom: 3px solid transparent; }
         .nav-btn.active { color: var(--line-green); border-bottom: 3px solid var(--line-green); font-weight: bold; }
-        .main-content { padding-top: 0 !important; padding-bottom: 120px;}
+        .main-content { padding-top: 90px; padding-bottom: 120px;}
 
         /* 商品卡片與樣式 */
         .section-title { padding: 15px 15px 5px; font-weight: bold; font-size: 16px; display: block; }
@@ -62,8 +62,8 @@
         .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #06C755; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         /* 分頁 */
-        .pager { text-align: center; padding: 15px;margin-bottom: 120px !important; /* 🔥 強制加高底部，把按鈕往上頂 */ }
-        .pager button { padding: 15px; margin: 0 5px; background: white; border: 1px solid #ddd; border-radius: 5px; }
+        .pager { text-align: center; padding: 15px;margin-bottom: 80px !important; /* 🔥 強制加高底部，把按鈕往上頂 */ }
+        .pager button { padding: 10px; margin: 0 5px; background: white; border: 1px solid #ddd; border-radius: 5px; }
 
 }
 
@@ -451,6 +451,7 @@ function renderHistoryFromMemory() {
     </script>
 </body>
 </html>
+
 
 
 
