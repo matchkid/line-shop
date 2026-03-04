@@ -253,6 +253,21 @@ function renderFeatured() {
             <div class="feat-info">${p.name}<br><b style="color:red">$${p.price}</b></div>
         </div>
     `).join('');
+    
+    // 🔥 強制對齊修正
+    setTimeout(() => {
+        const headerHeight = document.querySelector('.fixed-header').offsetHeight;
+        const mainContent = document.querySelector('.main-content');
+        
+        // 修正內容區塊的頂部，確保與 Header 完美銜接
+        mainContent.style.marginTop = headerHeight + "px";
+        mainContent.style.paddingTop = "0px";
+        
+        // 檢查是否有負邊距溢出
+        window.scrollTo(0, 0); 
+    }, 100); // 延遲 100ms 確保 DOM 已渲染
+}
+
 }
 // 🔥 修改：快速加入購物車 (原本首頁的 onclick 會報錯，因為沒定義 quickAdd)
 function quickAdd(name, price) {
@@ -464,6 +479,7 @@ function renderHistoryFromMemory() {
     </script>
 </body>
 </html>
+
 
 
 
