@@ -52,7 +52,7 @@
         .input-group { margin-bottom: 15px; }
         .input-group label { display: block; font-size: 13px; color: #666; margin-bottom: 5px; }
         .input-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn-submit { width: 100%; background: var(--line-green); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 16px; margin-top: 10px; cursor: pointer; }
+        .btn-submit { width: 100%; background: var(--line-green); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 12px; margin-top: 10px; cursor: pointer; }
         .btn-close { width: 100%; background: #f0f0f0; color: #666; border: none; padding: 10px; border-radius: 10px; font-weight: bold; margin-top: 10px; cursor: pointer; }
         .cart-bar { position: fixed; bottom: 20px; left: 15px; right: 15px; background: #333; color: white; padding: 5px 5px; border-radius: 30px; display: flex; justify-content: space-between; align-items: center; z-index: 2000; cursor: pointer; }
         /* 強制移除列表的上方外距 */
@@ -65,19 +65,6 @@
         .pager { text-align: center; padding: 5px;margin-bottom: 65px !important; /* 🔥 強制加高底部，把按鈕往上頂 */ }
         .pager button { padding: 5px; margin: 0 5px; background: white; border: 1px solid #ddd; border-radius: 5px; }
 
-/* 1. 給予容器一個極小的透明邊框，阻斷邊距重疊 */
-#view-home, #view-cat, #view-hist {
-    border-top: 0.1px solid transparent; 
-    margin-top: 0 !important;
-    padding-top: 0 !important;
-}
-
-/* 2. 強制首頁第一個標題的間距消失 */
-#view-home .section-title:first-child {
-    margin-top: 0 !important;
-    padding-top: 15px; /* 改用 padding 就不會產生白邊 */
-    display: block;
-}
 
 
     </style>
@@ -468,6 +455,7 @@ function renderHistoryFromMemory() {
     </script>
 </body>
 </html>
+
 
 
 
