@@ -225,7 +225,7 @@ if (savedCart) {
     }
 }    
 // 🔥 新增：渲染首頁推薦商品
-//function renderFeatured() {
+function renderFeatured() {
     // 篩選邏輯：Note 欄位包含 "推薦" 或 "HOT" (不分大小寫)
     const featItems = allProducts.filter(p => 
         p.note && (p.note.includes('推薦') || p.note.toUpperCase().includes('HOT'))
@@ -451,6 +451,7 @@ function renderHistoryFromMemory() {
     </script>
 </body>
 </html>
+
 
 
 
