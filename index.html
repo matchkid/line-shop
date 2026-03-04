@@ -65,7 +65,20 @@
         .pager { text-align: center; padding: 5px;margin-bottom: 65px !important; /* 🔥 強制加高底部，把按鈕往上頂 */ }
         .pager button { padding: 5px; margin: 0 5px; background: white; border: 1px solid #ddd; border-radius: 5px; }
 
+/* 1. 給予容器一個極小的透明邊框，阻斷邊距重疊 */
+#view-home, #view-cat, #view-hist {
+    border-top: 0.1px solid transparent; 
+    margin-top: 0 !important;
+    padding-top: 0 !important;
 }
+
+/* 2. 強制首頁第一個標題的間距消失 */
+#view-home .section-title:first-child {
+    margin-top: 0 !important;
+    padding-top: 15px; /* 改用 padding 就不會產生白邊 */
+    display: block;
+}
+
 
     </style>
 </head>
@@ -451,6 +464,7 @@ function renderHistoryFromMemory() {
     </script>
 </body>
 </html>
+
 
 
 
