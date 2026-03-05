@@ -230,7 +230,7 @@ function renderFeatured() {
         p.note && (p.note.includes('推薦') || p.note.toUpperCase().includes('HOT'))
     );
     // 如果沒有設定推薦，就預設抓前 2 筆，避免首頁開天窗
-    const itemsToShow = featItems.length > 0 ? featItems : allProducts.slice(0, 3);
+    const itemsToShow = featItems.length > 0 ? featItems : allProducts.slice(0, 4);
     const container = document.querySelector('.feat-grid');
     container.innerHTML = itemsToShow.map(p => `
         <div class="feat-item" onclick="quickAdd('${p.name}', ${p.price})">
@@ -450,6 +450,7 @@ function renderHistoryFromMemory() {
     </script>
 </body>
 </html>
+
 
 
 
