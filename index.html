@@ -42,7 +42,7 @@
         .p-card:active {
   transform: scale(0.985);
         }
-        .p-img { width: 70px; height: 70px; border-radius: 6px; object-fit: cover; margin-right: 12px; }
+   /*     .p-img { width: 70px; height: 70px; border-radius: 6px; object-fit: cover; margin-right: 12px; }
         .p-details { flex: 1; }
         .p-details small {
   font-size: 11px;
@@ -71,8 +71,67 @@
   font-weight: 600;
   margin: 0 6px;
   min-width: 18px;
-  text-align: center; }
+  text-align: center; }  */
 
+/* ===== 少女感版本 ===== */
+
+.p-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 12px;
+  margin: 8px 15px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4px 10px rgba(255,182,193,0.25);
+}
+
+.p-img {
+  width: 68px;
+  height: 68px;
+  border-radius: 16px;
+  background: #fff5f8;
+  margin-right: 12px;
+}
+
+.p-link {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #444;
+}
+
+.p-details {
+  font-size: 12px;
+  color: #ff8fa3;
+}
+
+.p-price {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ff6f91;
+  margin-top: 4px;
+}
+
+.qty-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid #ffd1dc;
+  background: #fff;
+  color: #ff6f91;
+}
+
+.qty-btn:active {
+  background: #fff0f5;
+}
+
+.qty-val {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ff6f91;
+}
+
+        
         /* 歷史紀錄卡片 */
         .history-card { background: white; margin: 10px 15px; padding: 15px; border-radius: 8px; border-left: 4px solid #ddd; }
         .history-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; font-size: 14px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
@@ -484,6 +543,7 @@ function renderHistoryFromMemory() {
     </script>
 </body>
 </html>
+
 
 
 
