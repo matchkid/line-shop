@@ -62,7 +62,11 @@
         .btn-submit { width: 100%; background: var(--line-green); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 16px; margin-top: 10px; cursor: pointer; }
         .btn-close { width: 100%; background: #f0f0f0; color: #666; border: none; padding: 10px; border-radius: 10px; font-weight: bold; margin-top: 10px; cursor: pointer; }
         .cart-bar { position: fixed; bottom: 20px; left: 15px; right: 15px; background: #333; color: white; padding: 12px 20px; border-radius: 30px; display: flex; justify-content: space-between; align-items: center; z-index: 2000; cursor: pointer; }
-
+/* 強制移除列表的上方外距 */
+#catList, #histList {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
         /* 分頁 */
         .pager { text-align: center; padding: 15px; }
         .pager button { padding: 5px 15px; margin: 0 5px; background: white; border: 1px solid #ddd; border-radius: 5px; }
@@ -453,6 +457,7 @@ function renderHistoryFromMemory() {
     </script>
 </body>
 </html>
+
 
 
 
