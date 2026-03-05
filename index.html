@@ -30,14 +30,48 @@
         .cat-scroller { display: flex; gap: 8px; padding: 10px 15px; overflow-x: auto; background: white; white-space: nowrap; border-bottom: 1px solid #f0f0f0; }
         .cat-pill { padding: 6px 14px; border-radius: 20px; background: #f0f0f0; font-size: 14px; color: #555; cursor: pointer; }
         .cat-pill.active { background: var(--line-green); color: white; }
-        .p-card { display: flex; background: white; padding: 10px; border-radius: 8px; margin: 10px 15px; align-items: center; }
+        .p-card {
+  background: #ffffff;
+  border-radius: 14px;               /* 比原本更可愛 */
+  padding: 12px;
+  margin: 8px 15px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+        }
+        .p-card:active {
+  transform: scale(0.985);
+        }
         .p-img { width: 70px; height: 70px; border-radius: 6px; object-fit: cover; margin-right: 12px; }
         .p-details { flex: 1; }
+        .p-details small {
+  font-size: 11px;
+  color: #999;
+        }
         .p-link { text-decoration: none; color: #333; font-weight: bold; font-size: 14px;line-height: 1.3; border-bottom: 1px dashed #999; }
-        .p-price { color: #e44d26; font-weight: bold; display: block; font-size: 12px margin-top: 4px; }
-        .qty-box { display: flex; align-items: center; font-size: 12px }
-        .qty-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid #ddd; background: white; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .qty-val { margin: 0 8px; font-weight: bold; min-width: 20px; text-align: center; }
+        .p-price { font-size: 13px;
+  font-weight: 600;
+  color: #e44d26;
+  margin-top: 4px; }
+        .qty-box { display: flex; align-items: center; }
+        
+       .qty-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid #ddd;
+  background: #fff;
+  font-size: 16px;
+  line-height: 1;
+  color: #666;
+        .qty-btn:active {
+  background: #f0f0f0;
+        }
+        .qty-val {   font-size: 13px;
+  font-weight: 600;
+  margin: 0 6px;
+  min-width: 18px;
+  text-align: center; }
 
         /* 歷史紀錄卡片 */
         .history-card { background: white; margin: 10px 15px; padding: 15px; border-radius: 8px; border-left: 4px solid #ddd; }
@@ -450,6 +484,7 @@ function renderHistoryFromMemory() {
     </script>
 </body>
 </html>
+
 
 
 
