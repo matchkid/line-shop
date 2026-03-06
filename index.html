@@ -30,7 +30,7 @@
         .cat-scroller { display: flex; gap: 8px; padding: 10px 15px; overflow-x: auto; background: white; white-space: nowrap; border-bottom: 1px solid #f0f0f0; }
         .cat-pill { padding: 6px 14px; border-radius: 20px; background: #f0f0f0; font-size: 14px; color: #555; cursor: pointer; }
         .cat-pill.active { background: var(--line-green); color: white; }
-         .qty-box { display: flex; align-items: center; }
+
 /*        .p-card {
   background: #ffffff;
   border-radius: 14px;               /* 比原本更可愛 */
@@ -54,7 +54,7 @@
   font-weight: 600;
   color: #e44d26;
   margin-top: 4px; }
-       
+       .qty-box { display: flex; align-items: center; }
         
        .qty-btn {
   width: 26px;
@@ -74,62 +74,57 @@
   min-width: 18px;
   text-align: center; }  
         */
-/* ===== 少女感版本 ===== */
+/* ===== 日系雜貨風 ===== */
 
 .p-card {
   background: #fff;
-  border-radius: 18px;
-  padding: 12px;
-  margin: 8px 15px;
+  border-radius: 12px;
+  padding: 14px;
+  margin: 10px 15px;
   display: flex;
   align-items: center;
-  box-shadow: 0 4px 10px rgba(255,182,193,0.25);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
 .p-img {
-  width: 68px;
-  height: 68px;
-  border-radius: 16px;
-  background: #fff5f8;
-  margin-right: 12px;
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  background: #fafafa;
+  margin-right: 14px;
 }
 
 .p-link {
-  font-size: 13.5px;
-  font-weight: 600;
-  line-height: 1.35;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
   color: #444;
 }
 
 .p-details {
-  font-size: 12px;
-  color: #ff8fa3;
+  font-size: 12.5px;
+  color: #777;
 }
 
 .p-price {
   font-size: 13px;
-  font-weight: 600;
-  color: #ff6f91;
-  margin-top: 4px;
+  font-weight: 500;
+  color: #b85c38; /* 日系暖棕 */
+  margin-top: 6px;
 }
 
 .qty-btn {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  border: 1px solid #ffd1dc;
+  border: 1px solid #e2e2e2;
   background: #fff;
-  color: #ff6f91;
-}
-
-.qty-btn:active {
-  background: #fff0f5;
+  color: #888;
 }
 
 .qty-val {
-  font-size: 13px;
-  font-weight: 600;
-  color: #ff6f91;
+  font-size: 12px;
+  font-weight: 500;
 }
         
         /* 歷史紀錄卡片 */
@@ -543,6 +538,7 @@ function renderHistoryFromMemory() {
     </script>
 </body>
 </html>
+
 
 
 
