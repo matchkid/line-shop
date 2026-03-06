@@ -365,25 +365,7 @@ function changeHistPage(d) {
     window.scrollTo(0, 0);
 }
     
-//    if(!myHistory || myHistory.length === 0) { 
-        list.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">目前沒有訂單紀錄</div>'; 
-        return; 
-    }
-    
-    list.innerHTML = myHistory.map(o => `
-        <div class="history-card">
-            <div class="history-header"><span>${o.date}</span><span>單號: ${o.id.slice(-6)}</span></div>
-            <div>${o.items.map(i => `
-                <div class="hist-item-row">
-                    <span>${i.name} x${i.qty}</span>
-                    <span class="status-badge" data-status="${i.itemStatus}">${i.itemStatus}</span>
-                </div>`).join('')}
-            </div>
-            <div style="text-align:right; font-weight:bold; color:#e44d26; margin-top:8px; border-top:1px solid #eee; padding-top:5px;">
-                運費: $${o.shipping} / 總計: $${o.total}
-            </div>
-        </div>`).join('');
-}
+
         
         
         // --- 3. 渲染商品 (包含連結邏輯) ---
@@ -505,6 +487,7 @@ function changeHistPage(d) {
     </script>
 </body>
 </html>
+
 
 
 
