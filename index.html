@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>喜幼 微商城</title>
-    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js">
+   let currentHistPage = 1;
+const histPageSize = 5; // 歷史紀錄每頁顯示 5 筆，可自行調整
+</script>
     <style>
         html {  padding-top: 0 !important;}
         :root { --line-green: #06C755; --bg-color: #f5f5f5; }
@@ -316,10 +319,55 @@ function switchTab(tab) {
     window.scrollTo(0,0);
 }
 // 🔥 新增：直接從記憶體渲染歷史紀錄 (瞬間顯示)
+
 function renderHistoryFromMemory() {
     const list = document.getElementById('histList');
+    if (!myHistory || myHistory.length === 0) {
+        list.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">目前沒有訂單紀錄</div>';
+        return;
+    }
+
+    // 計算分頁
+    const start = (currentHistPage - 1) * histPageSize;
+    const end = start + histPageSize;
+    const pageData = myHistory.slice(start, end);
+    const totalPages = Math.ceil(myHistory.length / histPageSize);
+
+    // 渲染訂單卡片
+    let html = pageData.map(o => `
+        <div class="history-card">
+            <div class="history-header"><span>${o.date}</span><span>單號: ${o.id.slice(-6)}</span></div>
+            <div>${o.items.map(i => `
+                <div class="hist-item-row">
+                    <span>${i.name} x${i.qty}</span>
+                    <span class="status-badge" data-status="${i.itemStatus}">${i.itemStatus}</span>
+                </div>`).join('')}
+            </div>
+            <div style="text-align:right; font-weight:bold; color:#e44d26; margin-top:8px; border-top:1px solid #eee; padding-top:5px;">
+                運費: $${o.shipping} / 總計: $${o.total}
+            </div>
+        </div>`).join('');
+
+    // 加上分頁按鈕 (Pager)
+    html += `
+        <div class="pager">
+            <button onclick="changeHistPage(-1)" ${currentHistPage === 1 ? 'disabled' : ''}>上一頁</button>
+            <span style="margin:0 15px;">${currentHistPage} / ${totalPages}</span>
+            <button onclick="changeHistPage(1)" ${currentHistPage === totalPages ? 'disabled' : ''}>下一頁</button>
+        </div>
+        <div style="height:80px;"></div> `;
+
+    list.innerHTML = html;
+}
+
+// 分頁切換函式
+function changeHistPage(d) {
+    currentHistPage += d;
+    renderHistoryFromMemory();
+    window.scrollTo(0, 0);
+}
     
-    if(!myHistory || myHistory.length === 0) { 
+//    if(!myHistory || myHistory.length === 0) { 
         list.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">目前沒有訂單紀錄</div>'; 
         return; 
     }
@@ -459,6 +507,7 @@ function renderHistoryFromMemory() {
     </script>
 </body>
 </html>
+
 
 
 
