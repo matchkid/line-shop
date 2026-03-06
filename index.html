@@ -353,7 +353,7 @@ function renderHistoryFromMemory() {
             <span style="margin:0 10px;">${currentHistPage} / ${totalPages}</span>
             <button onclick="changeHistPage(1)" ${currentHistPage === totalPages ? 'disabled' : ''}>下一頁</button>
         </div>
-        <div style="height:40px;"></div> `;
+        <div style="height:20px;"></div> `;
 
     list.innerHTML = html;
 }
@@ -487,6 +487,7 @@ function changeHistPage(d) {
     </script>
 </body>
 </html>
+
 
 
 
