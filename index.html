@@ -19,7 +19,7 @@
         .nav-btn { flex: 1; padding: 5px; border: none; background: white; font-size: 14px; color: #666; cursor: pointer; border-bottom: 3px solid transparent; }
         .nav-btn.active { color: var(--line-green); border-bottom: 3px solid var(--line-green); font-weight: bold; }
         /* 內容容器 */
-        .main-content { padding-top: 60px;  }
+        .main-content { padding-top: 70px;  }
         /* 商品卡片與樣式 */
         .section-title { padding: 5px 5px 5px; font-weight: bold; font-size: 16px; display: block; }
         .feat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px 15px; }
@@ -344,7 +344,7 @@ function renderHistoryFromMemory() {
                     <span class="status-badge" data-status="${i.itemStatus}">${i.itemStatus}</span>
                 </div>`).join('')}
             </div>
-            <div style="text-align:right; font-weight:bold; color:#e44d26; margin-top:8px; border-top:1px solid #eee; padding-top:5px;">
+            <div style="text-align:right; font-size:12px; font-weight:bold; color:#e44d26; margin-top:8px; border-top:1px solid #eee; padding-top:5px;">
                 運費: $${o.shipping} / 總計: $${o.total}
             </div>
         </div>`).join('');
@@ -490,6 +490,7 @@ function changeHistPage(d) {
     </script>
 </body>
 </html>
+
 
 
 
