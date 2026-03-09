@@ -19,7 +19,7 @@
         .nav-btn { flex: 1; padding: 0px; border: none; background: white; font-size: 14px; color: #666; cursor: pointer; border-bottom: 3px solid transparent; }
         .nav-btn.active { color: var(--line-green); border-bottom: 3px solid var(--line-green); font-weight: bold; }
         /* 內容容器 */
-        .main-content { padding-top: 100px;  }
+        .main-content { padding-top: 60px;  }
         /* 商品卡片與樣式 */
         .section-title { padding: 5px 5px 5px; font-weight: bold; font-size: 16px; display: block; }
         .feat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px 15px; }
@@ -28,7 +28,7 @@
         .feat-info { padding: 8px; text-align: center; font-size: 12px; }
         .info-box { background: white; margin: 15px; padding: 15px; border-radius: 8px; border-left: 5px solid var(--line-green); font-size: 14px; line-height: 1.6; color: #555; }
         /* 3. 目錄區塊 (多重分類按鈕) */
-        .cat-scroller { display: flex; gap: 8px; padding: 0px 5px; overflow-x: auto; background: white; white-space: nowrap; border-bottom: 1px solid #f0f0f0;  
+        .cat-scroller { display: flex; gap: 8px; padding: 10px 5px; overflow-x: auto; background: white; white-space: nowrap; border-bottom: 1px solid #f0f0f0;  
                        margin-top: 0 !important; padding-top: 5px !important; /* 要不要留一點自己決定 */ }
         .cat-pill { padding: 6px 14px; border-radius: 20px; background: #f0f0f0; font-size: 14px; color: #555; cursor: pointer; }
         .cat-pill.active { background: var(--line-green); color: white; }
@@ -482,7 +482,7 @@ function changeHistPage(d) {
                 <div class="history-card">
                     <div class="history-header"><span>${o.date}</span><span>單號: ${o.id.slice(-6)}</span></div>
                     <div>${o.items.map(i => `<div class="hist-item-row"><span>${i.name} x${i.qty}</span><span class="status-badge" data-status="${i.itemStatus}">${i.itemStatus}</span></div>`).join('')}</div>
-                    <div style="text-align:right; font-weight:bold; color:#e44d26; margin-top:8px; border-top:1px solid #eee; padding-top:5px;">運費: $${o.shipping} / 總計: $${o.total}</div>
+                    <div style="text-align:right; font-size: 12px; font-weight:bold; color:#e44d26; margin-top:8px; border-top:1px solid #eee; padding-top:5px;">運費: $${o.shipping} / 總計: $${o.total}</div>
                 </div>`).join('');
         }
 
@@ -490,6 +490,7 @@ function changeHistPage(d) {
     </script>
 </body>
 </html>
+
 
 
 
