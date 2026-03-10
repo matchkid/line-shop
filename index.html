@@ -20,7 +20,7 @@
         .nav-btn.active { color: var(--line-green); border-bottom: 3px solid var(--line-green); font-weight: bold; }
         /* 內容容器 */
         .main-content { padding-top: 70px;  }
-        /* 商品卡片與樣式 */
+        /* 首頁卡片與樣式 */
         .section-title { padding: 5px 5px 5px; font-weight: bold; font-size: 16px; display: block; }
         .feat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px 15px; }
         .feat-item { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; }
@@ -28,9 +28,9 @@
         .feat-info { padding: 8px; text-align: center; font-size: 12px; }
         .info-box { background: white; margin: 15px; padding: 15px; padding-bottom: 45px; border-radius: 8px; border-left: 5px solid var(--line-green); font-size: 14px; line-height: 1.6; color: #555; }
         /* 3. 目錄區塊 (多重分類按鈕) */
-        .cat-scroller { display: flex; gap: 8px; padding: 10px 10px; overflow-x: auto; background: white; white-space: nowrap; border-bottom: 1px solid #f0f0f0;  
+        .cat-scroller { display: flex; gap: 8px; padding: 10px 5px; overflow-x: auto; background: white; white-space: nowrap; border-bottom: 1px solid #f0f0f0;  
                        /*margin-top: 0 !important; padding-top: 5px !important;  要不要留一點自己決定 */ }
-        .cat-pill { padding: 5px 5px; border-radius: 10px; background: #f0f0f0; font-size: 14px; color: #555; cursor: pointer; }
+        .cat-pill { padding: 0px 5px; border-radius: 10px;/*膠囊按鈕弧度*/ background: #f0f0f0; font-size: 14px; color: #555; cursor: pointer; }
         .cat-pill.active { background: var(--line-green); color: white; }
          /* 4. 商品列表與連結 */
         .p-card {  background: #ffffff;  border-radius: 14px;      /* 比原本更可愛 */  padding: 12px;  margin: 8px 15px;  display: flex;  align-items: center;  box-shadow: 0 3px 8px rgba(0,0,0,0.06);  }
@@ -490,6 +490,7 @@ function changeHistPage(d) {
     </script>
 </body>
 </html>
+
 
 
 
