@@ -18,8 +18,28 @@
         .nav-tabs { display: flex; justify-content: space-around; padding-bottom: 0; border-bottom: 1px solid #eee; }
         .nav-btn { flex: 1; padding: 5px; border: none; background: white; font-size: 14px; color: #666; cursor: pointer; border-bottom: 3px solid transparent; }
         .nav-btn.active { color: var(--line-green); border-bottom: 3px solid var(--line-green); font-weight: bold; }
+        /* 容器：隱藏溢出的頁面 */
+.view-viewport {
+    width: 100%;
+    overflow: hidden;
+}
+
+/* 捲動層：寬度為三倍，增加平滑動畫 */
+#view-wrapper {
+    display: flex;
+    width: 300%; 
+    transition: transform 0.3s ease-out;
+    will-change: transform;
+}
+
+/* 每一頁：寬度佔 1/3 (即一整個螢幕) */
+.page-view {
+    width: 33.3333%;
+    flex-shrink: 0;
+    /* 移除原本可能有的 display: none */
+}
         /* 內容容器 */
-        .main-content { padding-top: 75px;  }
+        .main-content { padding-top: 75px;  padding-top: 0 !important;}
         /* 首頁卡片與樣式 */
         .section-title { padding: 5px 5px 5px; font-weight: bold; font-size: 14px; display: block; }
         .feat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px 15px; }
@@ -94,11 +114,20 @@ line-height:1.4; }
             <button class="nav-btn" id="tab-hist" onclick="switchTab('hist')">歷史紀錄</button>
         </div>
     </div>
-    <div class="main-content"> 
-    <div id="view-home">
-     <div class="feat-item" onclick="quickAdd('精選商品A', 490)" style="display:none">
-                    <img src="https://via.placeholder.com/200x150?text=Hot+Sale">
-     </div> 
+    <div class="main-content">
+    <div class="view-viewport">
+        <div id="view-wrapper">
+            <div id="view-home" class="page-view">
+                </div>
+
+            <div id="view-cat" class="page-view">
+                </div>
+
+            <div id="view-hist" class="page-view">
+                </div>
+        </div>
+    </div>
+</div> 
     <span class="section-title">🔥 店長精選</span>
         <div class="feat-grid"></div>
     <div class="info-box">
@@ -503,6 +532,67 @@ function renderProducts() {
         }
 
         init();
+
+        // --- 全域變數新增 ---
+let startX = 0;
+let currentIndex = 0; // 0: 首頁, 1: 目錄, 2: 歷史
+const tabList = ['home', 'cat', 'hist'];
+
+// --- 滑動事件監聽 ---
+const wrapper = document.getElementById('view-wrapper');
+
+wrapper.addEventListener('touchstart', (e) => {
+    // 如果手指在分類選單(cat-scroller)上滑動，不觸發換頁
+    if (e.target.closest('.cat-scroller')) return;
+    startX = e.touches[0].clientX;
+}, {passive: true});
+
+wrapper.addEventListener('touchend', (e) => {
+    if (e.target.closest('.cat-scroller')) return;
+    let endX = e.changedTouches[0].clientX;
+    handleSwipe(startX, endX);
+}, {passive: true});
+
+function handleSwipe(s, e) {
+    const diff = s - e;
+    const threshold = 60; // 滑動超過 60px 才切換
+    
+    if (Math.abs(diff) > threshold) {
+        if (diff > 0 && currentIndex < 2) {
+            currentIndex++; // 向左滑 -> 下一頁
+        } else if (diff < 0 && currentIndex > 0) {
+            currentIndex--; // 向右滑 -> 上一頁
+        }
+        // 使用索引值來觸發切換
+        switchTab(tabList[currentIndex]);
+    }
+}
+
+// --- 整合後的切換函式 ---
+function switchTab(tab) {
+    // 1. 更新目前的索引值 (為了同步滑動狀態)
+    currentIndex = tabList.indexOf(tab);
+
+    // 2. 更新 UI 按鈕樣式 (原本的邏輯)
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(`tab-${tab}`).classList.add('active');
+
+    // 3. 執行滑動位移
+    const offset = currentIndex * -33.3333;
+    document.getElementById('view-wrapper').style.transform = `translateX(${offset}%)`;
+
+    // 4. 根據分頁載入資料 (優化效能：切換到該頁才渲染)
+    if (tab === 'cat') {
+        renderProducts(); 
+    } else if (tab === 'hist') {
+        // 渲染歷史紀錄並重置到第一頁
+        currentHistPage = 1; 
+        renderHistoryFromMemory();
+    }
+    
+    // 5. 回到頂部
+    window.scrollTo(0, 0);
+}
     </script>
 </body>
 </html>
