@@ -473,6 +473,17 @@ function renderProducts() {
     localStorage.setItem('myCart', JSON.stringify(cart));
             updateCartBar();
             if(!document.getElementById('view-cat').classList.contains('hidden')) renderProducts();
+
+        // 👇 畫面即時更新邏輯 👇
+    // 1. 如果目前在「商品目錄」頁，刷新目錄
+    if(!document.getElementById('view-cat').classList.contains('hidden')) {
+        renderProducts();
+    }
+    // 🔥 2. 新增：如果目前在「我的收藏」頁，刷新收藏清單
+    if(!document.getElementById('view-fav').classList.contains('hidden')) {
+        renderFavorites();
+    }
+        
         }
         // --- 4. 購物車與彈窗邏輯 ---
         function updateCartBar() {
