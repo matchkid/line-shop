@@ -85,6 +85,32 @@ line-height:1.4; }
         .pager { text-align: center; padding: 5px;margin-bottom: 65px !important; /* 🔥 強制加高底部，把按鈕往上頂 */; font-size:13px;}
         .pager button { padding: 5px; margin: 0 5px; background: white; border: 1px solid #ddd; border-radius: 5px; }
 
+
+/* 商品目錄網格容器樣式 (專用於 #catList) */
+.product-grid {    display: grid;    grid-template-columns: 1fr 1fr; /* 強制兩欄，寬度均分 */    gap: 10px; /* 卡片之間的間距 */    padding: 10px 15px; /* 容器邊距，與首頁一致 */    background: #f5f5f5; /* 背景色 */}
+/* 網格方塊卡片樣式 */
+.grid-card {    background: white;    border-radius: 8px;    overflow: hidden;    box-shadow: 0 2px 5px rgba(0,0,0,0.05);    display: flex;    flex-direction: column; /* 直立式排版：圖片在上，資訊在下 */    position: relative; /* 為了放置收藏愛心 */}
+/* 網格圖片容器樣式 (固定高度) */
+.grid-card .p-img-container {    width: 100%;    height: 120px; /* 固定圖片高度，與首頁一致 */    overflow: hidden;}
+/* 網格圖片樣式 (滿版填滿容器) */
+.grid-card .p-img {    width: 100%;    height: 100%;    object-fit: cover; /* 確保圖片不變形填滿 */    display: block;}
+/* 收藏愛心樣式 (覆蓋在網格圖片上) */
+.grid-card .fav-btn {    position: absolute;    top: 8px;    right: 8px;    font-size: 20px;    color: white; /* 圖片上愛心的預設顏色 */    text-shadow: 0 0 2px rgba(0,0,0,0.5); /* 增加文字陰影以便在白色圖片上清晰 */    z-index: 10;}
+.grid-card .fav-btn.active { color: #ff4757; }
+.grid-card .fav-btn.inactive { color: white; }
+/* 網格資訊樣式 (置中) */
+.grid-card .p-details-centered {    padding: 8px;    text-align: center; /* 資訊置中，與首頁一致 */    flex-grow: 1; /* 佔滿剩餘空間，讓+/-按鈕在底部對齊 */    display: flex;    flex-direction: column;    justify-content: space-between; /* 上下對齊 */}
+/* 網格名稱樣式 (維持連結邏輯) */
+.grid-card .p-name {    font-weight: bold;    color: #333;    font-size: 13px;    display: block; /* 讓名稱單獨佔一行 */   margin-bottom: 5px;}
+/* 網格價格樣式 */
+.grid-card .p-price {    color: #e44d26;    font-weight: bold;    font-size: 14px;    display: block; /* 讓價格單獨佔一行 */    margin-bottom: 8px;}
+/* 網格推薦/備註樣式 */
+.grid-card .note-centered {    font-size: 12px;     color: #888;     font-style: italic;    margin-top: 4px;    text-align: center; /* 文字置中 */}
+/* 網格數量按鈕容器 (置中在底部) */
+.grid-card .qty-box-centered {    display: flex;    align-items: center;    justify-content: center; /* 置中 */    margin-top: 10px; /* 與上方資訊保持間距 */}
+/* 原有 .qty-btn 樣式應維持，只需微調網格卡片內的按鈕尺寸 */
+.grid-card .qty-btn {    width: 25px; /* 微調小一點，配合網格 */    height: 25px;    border-radius: 50%;    border: 1px solid #ddd;    background: white;    display: flex;    align-items: center;    justify-content: center;    cursor: pointer;}
+.grid-card .qty-val {    margin: 0 5px; /* 縮減間距 */    font-weight: bold;    min-width: 20px;    text-align: center;    font-size: 12px;}
     </style>
 </head>
 <body>
@@ -391,37 +417,43 @@ function renderProducts() {
     const list = document.getElementById('catList');
     const start = (currentPage - 1) * pageSize;
     const chunk = displayList.slice(start, start + pageSize);
+// 🔥 新增：確保卡片容器在目錄頁使用網格樣式 (在 switchTab 中設定)
     
     list.innerHTML = chunk.map(p => {
         const qty = cart[p.name] ? cart[p.name].qty : 0;
-        const isFav = favorites[p.name] ? 'active' : 'inactive';
-        const favIcon = favorites[p.name] ? '❤️' : '🤍';        
-        // 1. 名稱部分 (維持原樣)
-        const nameHtml = p.link ? `<a href="${p.link}" target="_blank" class="p-link">${p.name} </a>` : `<b>${p.name}</b>`;
-
-        // 2. 備註部分 (改為獨立區塊)
-        const noteHtml = p.note ? `<div style="font-size:12px; color:#888; font-style:italic; margin-top:4px;">/ ${p.note}</div>` : '';
         
+        // 1. 初始化收藏狀態
+        let isFav = favorites[p.name] ? 'active' : 'inactive';
+        let favIcon = favorites[p.name] ? '❤️' : '🤍';
+        
+        // 2. 名稱與連結部分 (維持原本邏輯)
+        let nameHtml = p.link ? `<a href="${p.link}" target="_blank" class="p-link">${p.name} 🔗</a>` : `<b>${p.name}</b>`;
+        
+        // 3. 備註/推薦部分 (改為獨立置中區塊)
+        let noteHtml = p.note ? `<div class="note-centered">/ ${p.note}</div>` : '';
+
         return `
-        <div class="p-card">
-            <img class="p-img" src="${p.img || 'https://via.placeholder.com/70'}">
-            <div class="p-details">
-                <div style="display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px;">
-                   <span class="fav-btn ${isFav}" onclick="toggleFavorite('${p.name}', ${p.price}, '${p.img}', '${p.note}', '${p.link}')">${favIcon}</span>
-                    ${nameHtml}
-                    <span class="p-price" style="margin: 0;">$${p.price}</span>
-                </div>
-                ${noteHtml}
+        <div class="grid-card">
+            <div class="p-img-container">
+                <img class="p-img" src="${p.img || 'https://via.placeholder.com/200x150?text=No+Img'}">
+                <span class="fav-btn ${isFav}" onclick="toggleFavorite('${p.name}', ${p.price}, '${p.img}', '${p.note}', '${p.link}'); event.stopPropagation();">${favIcon}</span>
             </div>
-            <div class="qty-box">
-                <div class="qty-btn" onclick="updateCart('${p.name}', ${p.price}, -1)">-</div>
-                <span class="qty-val">${qty}</span>
-                <div class="qty-btn" onclick="updateCart('${p.name}', ${p.price}, 1)">+</div>
+            <div class="p-details-centered">
+                <div>
+                    <span class="p-name">${nameHtml}</span>
+                    <span class="p-price">$${p.price}</span>
+                    ${noteHtml}
+                </div>
+                <div class="qty-box-centered">
+                    <div class="qty-btn" onclick="updateCart('${p.name}', ${p.price}, -1)">-</div>
+                    <span class="qty-val">${cart[p.name] ? cart[p.name].qty : 0}</span>
+                    <div class="qty-btn" onclick="updateCart('${p.name}', ${p.price}, 1)">+</div>
+                </div>
             </div>
         </div>`;
     }).join('');
 
-    // 分頁更新 (維持原樣)
+    // 分頁更新 (維持原本邏輯)
     const totalPage = Math.ceil(displayList.length / pageSize) || 1;
     document.getElementById('pageInfo').innerText = `${currentPage} / ${totalPage}`;
 }
@@ -534,7 +566,14 @@ function switchTab(tab) {
     // 更新導覽列按鈕樣式
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.getElementById(`tab-${tab}`).classList.add('active');
-
+// 🔥 新增：管理商品網格樣式
+    const catList = document.getElementById('catList');
+    if (tab === 'cat') {
+        catList.classList.add('product-grid'); // 切換到目錄時加入網格樣式
+        renderProducts();
+    } else {
+        catList.classList.remove('product-grid'); // 切換離開時移除網格樣式，恢復原本樣式
+    }
     // 根據分頁渲染資料
     if (tab === 'cat') renderProducts();
     if (tab === 'fav') renderFavorites(); 
