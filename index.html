@@ -33,7 +33,7 @@
                        /*margin-top: 0 !important; padding-top: 5px !important;  要不要留一點自己決定 */ }
         .cat-pill { padding: 5px 5px; border-radius: 10px;/*膠囊按鈕弧度*/ background: #f0f0f0; font-size: 14px; color: #555; cursor: pointer; }
         .cat-pill.active { background: var(--line-green); color: white; }
-/* --------
+
         /* 4. 商品列表與連結 */
         .p-card {  background: #ffffff;  border-radius: 14px;      /* 比原本更可愛 */  padding: 12px;  margin: 8px 15px;  display: flex;  align-items: center;  box-shadow: 0 3px 8px rgba(0,0,0,0.06);  }
         .p-card:active {transform: scale(0.98); }
@@ -54,7 +54,7 @@
         .qty-btn:active {background: #f0f0f0;  }
         /*數量*/
         .qty-val {   font-size: 13px;font-weight: 600;margin: 0 6px; min-width: 18px;  text-align: center; }  
-  -------- */     
+     
         /*收藏愛心*/
         .fav-btn {font-size: 12px;    cursor: pointer; margin-right: 8px; flex; align-items: center;}
         .fav-btn.active { color: #ff4757; } /* 收藏後的紅色 */
@@ -142,7 +142,7 @@ line-height:1.4; }
         ➤ 全館滿 5kg 免運，下單後再與喜幼確認運費。<br>
         ➤ 沒特別標註都是空運價，需海運等一至二個月的闆闆請移步。勿空運海運條件不同做無意義比價。<br>
         ➤ 有顏色選項或其它特殊要求，也請另外回覆告知。<br>
-        ➤ 打開商城，會花一丟丟載入時間，請等待一下下！</div>
+        ➤ 打開商城，因圖檔較多會花一丟丟載入時間，請等待一下下！</div>
      </div>
     </div>
         <div id="view-cat" class="hidden">
@@ -290,7 +290,7 @@ function renderFeatured() {
     const container = document.querySelector('.feat-grid');
 container.innerHTML = itemsToShow.map(p => {
         // 判斷是否有連結，如果沒有連結，點擊後跳轉到「商品目錄」分頁
-        const clickAction = p.link ? `window.open('${p.link}', '_blank')='${p.link}'` : `switchTab('cat')`;
+        const clickAction = p.link ? `window.open('${p.link}', '_blank')` : `switchTab('cat')`;
         
         return `
             <div class="feat-item" onclick="${clickAction}">
@@ -422,8 +422,6 @@ function changeHistPage(d) {
     renderHistoryFromMemory();
     window.scrollTo(0, 0);
 }
-    
-
         
         
         // --- 3. 渲染商品 (包含連結邏輯) ---
