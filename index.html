@@ -435,7 +435,7 @@ function renderProducts() {
         return `
         <div class="grid-card">
             <div class="p-img-container">
-                <img class="p-img" src="${p.img || 'https://via.placeholder.com/200x150?text=No+Img'}">
+                <img class="p-img" src="${p.img || 'https://via.placeholder.com/200x150?text=No+Img'}" loading="lazy">
                 <span class="fav-btn ${isFav}" onclick="toggleFavorite('${p.name}', ${p.price}, '${p.img}', '${p.note}', '${p.link}'); event.stopPropagation();">${favIcon}</span>
             </div>
             <div class="p-details-centered">
