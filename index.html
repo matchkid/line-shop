@@ -290,7 +290,7 @@ function renderFeatured() {
     const container = document.querySelector('.feat-grid');
 container.innerHTML = itemsToShow.map(p => {
         // 判斷是否有連結，如果沒有連結，點擊後跳轉到「商品目錄」分頁
-        const clickAction = p.link ? `window.location.href='${p.link}'` : `switchTab('cat')`;
+        const clickAction = p.link ? `window.open('${p.link}', '_blank')='${p.link}'` : `switchTab('cat')`;
         
         return `
             <div class="feat-item" onclick="${clickAction}">
