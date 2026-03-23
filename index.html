@@ -648,7 +648,32 @@ function renderFavorites() {
         </div>`;
     }).join('');
 }
+function renderHome() {
+    const featGrid = document.querySelector('.feat-grid');
+    // 假設您的推薦商品資料陣列叫做 featuredProducts
+    featGrid.innerHTML = featuredProducts.map(p => {
+        return `
+        <div class="feat-item" onclick="openProductLink('${p.link}')">
+            <img src="${p.img || 'https://via.placeholder.com/150'}" loading="lazy">
+            <div class="feat-info">
+                <b>${p.name}</b>
+                <div style="color: #e44d26; font-weight: bold;">$${p.price}</div>
+                <div style="font-size: 10px; color: #999;">點擊查看詳情</div>
+            </div>
+        </div>`;
+    }).join('');
+}
 
+// 新增一個專門處理跳轉的函式
+function openProductLink(url) {
+    if (url && url !== "#" && url !== "") {
+        // 在 LINE 內部瀏覽器開啟連結
+        window.location.href = url; 
+        // 或者使用 window.open(url, '_blank'); 
+    } else {
+        alert("此商品暫無詳細說明頁面");
+    }
+}
     </script>
 </body>
 </html>
