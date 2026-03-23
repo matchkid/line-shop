@@ -35,7 +35,7 @@
         .cat-pill.active { background: var(--line-green); color: white; }
          /* 4. 商品列表與連結 */
         .p-card {  background: #ffffff;  border-radius: 14px;      /* 比原本更可愛 */  padding: 12px;  margin: 8px 15px;  display: flex;  align-items: center;  box-shadow: 0 3px 8px rgba(0,0,0,0.06);  }
-        .p-card:active {transform: scale(0.985); }
+        .p-card:active {transform: scale(0.98); }
         .p-img { width: 70px; height: 70px; border-radius: 6px; object-fit: cover; margin-right: 12px; }
         .p-details { flex: 1; }
         .p-details small {  font-size: 11px; color: #999;  }
@@ -53,7 +53,11 @@
         .qty-btn:active {background: #f0f0f0;  }
         /*數量*/
         .qty-val {   font-size: 13px;font-weight: 600;margin: 0 6px; min-width: 18px;  text-align: center; }  
-
+        
+        /*收藏愛心*/
+        .fav-btn {font-size: 12px;    cursor: pointer; margin-right: 8px;}
+        .fav-btn.active { color: #ff4757; } /* 收藏後的紅色 */
+        .fav-btn.inactive { color: #ccc; }  /* 未收藏的灰色 */
         
         /* 歷史紀錄卡片 */
         .history-card { background: white; margin: 5px 15px; padding: 0px; border-radius: 8px; border-left: 4px solid #ddd; }
@@ -92,6 +96,7 @@ line-height:1.4; }
         <div class="nav-tabs">
             <button class="nav-btn active" id="tab-home" onclick="switchTab('home')">首頁</button>
             <button class="nav-btn" id="tab-cat" onclick="switchTab('cat')">商品目錄</button>
+            <div id="tab-fav" class="nav-btn" onclick="switchTab('fav')">我的收藏</div>
             <button class="nav-btn" id="tab-hist" onclick="switchTab('hist')">歷史紀錄</button>
         </div>
     </div>
@@ -121,7 +126,10 @@ line-height:1.4; }
                 <button onclick="changePage(1)">下一頁</button>
             </div>
         </div>
-
+    <div id="view-fav" class="hidden">
+        <div id="favList" style="padding-top:10px;"></div>
+    </div>
+    
         <div id="view-hist" class="hidden">
             <div id="histList" style="padding-top:10px;"></div>
         </div>
@@ -386,10 +394,11 @@ function renderProducts() {
     
     list.innerHTML = chunk.map(p => {
         const qty = cart[p.name] ? cart[p.name].qty : 0;
-        
+        const isFav = favorites[p.name] ? 'active' : 'inactive';
+        const favIcon = favorites[p.name] ? '❤️' : '🤍';        
         // 1. 名稱部分 (維持原樣)
-        const nameHtml = p.link ? `<a href="${p.link}" target="_blank" class="p-link">${p.name} 🔗</a>` : `<b>${p.name}</b>`;
-        
+        const nameHtml = p.link ? `<a href="${p.link}" target="_blank" class="p-link">${p.name} </a>` : `<b>${p.name}</b>`;
+
         // 2. 備註部分 (改為獨立區塊)
         const noteHtml = p.note ? `<div style="font-size:12px; color:#888; font-style:italic; margin-top:4px;">/ ${p.note}</div>` : '';
         
@@ -398,7 +407,8 @@ function renderProducts() {
             <img class="p-img" src="${p.img || 'https://via.placeholder.com/70'}">
             <div class="p-details">
                 <div style="display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px;">
-                    ${nameHtml} 
+                   <span class="fav-btn ${isFav}" onclick="toggleFavorite('${p.name}', ${p.price}, '${p.img}', '${p.note}', '${p.link}')">${favIcon}</span>
+                    ${nameHtml}
                     <span class="p-price" style="margin: 0;">$${p.price}</span>
                 </div>
                 ${noteHtml}
@@ -506,7 +516,87 @@ function renderProducts() {
         }
 
         init();
+        //愛心收藏
+   // 1. 初始化收藏變數
+let favorites = JSON.parse(localStorage.getItem('myFavorites')) || {};
 
+// 2. 原本的切換分頁函式 (改回 hidden 寫法)
+function switchTab(tab) {
+    // 先把所有區塊隱藏
+    document.getElementById('view-home').classList.add('hidden');
+    document.getElementById('view-cat').classList.add('hidden');
+    document.getElementById('view-fav').classList.add('hidden');
+    document.getElementById('view-hist').classList.add('hidden');
+
+    // 顯示被點擊的區塊
+    document.getElementById(`view-${tab}`).classList.remove('hidden');
+
+    // 更新導覽列按鈕樣式
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(`tab-${tab}`).classList.add('active');
+
+    // 根據分頁渲染資料
+    if (tab === 'cat') renderProducts();
+    if (tab === 'fav') renderFavorites(); 
+    if (tab === 'hist') renderHistoryFromMemory();
+
+    window.scrollTo(0, 0);
+}
+
+// 3. 切換收藏狀態的函式
+function toggleFavorite(name, price, img, note, link) {
+    if (favorites[name]) {
+        delete favorites[name]; // 如果已經收藏，就移除
+    } else {
+        favorites[name] = { name, price, img, note, link }; // 否則加入收藏
+    }
+    // 存回手機瀏覽器
+    localStorage.setItem('myFavorites', JSON.stringify(favorites));
+    
+    // 重新渲染畫面更新愛心顏色
+    renderProducts();
+    
+    // 如果目前停留在收藏頁，也要同步更新收藏頁的畫面
+    const currentView = document.getElementById('view-fav');
+    if (!currentView.classList.contains('hidden')) {
+        renderFavorites();
+    }
+}
+
+// 4. 渲染我的收藏頁面 (HTML 結構與商品目錄一樣)
+function renderFavorites() {
+    const list = document.getElementById('favList');
+    const favItems = Object.values(favorites);
+    
+    if (favItems.length === 0) {
+        list.innerHTML = '<div style="text-align:center; padding:50px; color:#ccc;">尚無收藏商品</div>';
+        return;
+    }
+
+    list.innerHTML = favItems.map(p => {
+        const qty = cart[p.name] ? cart[p.name].qty : 0;
+        const nameHtml = p.link ? `<a href="${p.link}" target="_blank" class="p-link">${p.name} 🔗</a>` : `<b>${p.name}</b>`;
+        const noteHtml = p.note ? `<div style="font-size:12px; color:#888; font-style:italic; margin-top:4px;">/ ${p.note}</div>` : '';
+
+        return `
+        <div class="p-card">
+            <img class="p-img" src="${p.img || 'https://via.placeholder.com/70'}">
+            <div class="p-details">
+                <div style="display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px;">
+                    <span class="fav-btn active" onclick="toggleFavorite('${p.name}', ${p.price}, '${p.img}', '${p.note}', '${p.link}')">❤️</span>
+                    ${nameHtml} 
+                    <span class="p-price" style="margin: 0;">$${p.price}</span>
+                </div>
+                ${noteHtml}
+            </div>
+            <div class="qty-box">
+                <div class="qty-btn" onclick="updateCart('${p.name}', ${p.price}, -1)">-</div>
+                <span class="qty-val">${qty}</span>
+                <div class="qty-btn" onclick="updateCart('${p.name}', ${p.price}, 1)">+</div>
+            </div>
+        </div>`;
+    }).join('');
+}
 
     </script>
 </body>
