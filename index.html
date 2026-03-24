@@ -22,12 +22,58 @@
         /* 內容容器 */
         .main-content { padding-top: 75px;  }
         /* 首頁卡片與樣式 */
-        .section-title { padding: 5px 5px 5px; font-weight: bold; font-size: 14px; display: block; }
+ /*       .section-title { padding: 5px 5px 5px; font-weight: bold; font-size: 14px; display: block; }
         .feat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px 15px; }
         .feat-item { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; }
         .feat-item img { width: 100%; height: 100%; object-fit: cover; }
         .feat-info { padding: 8px; text-align: center; font-size: 12px; }
         .info-box { background: white; margin: 15px; padding: 15px; padding-bottom: 45px; border-radius: 8px; border-left: 5px solid var(--line-green); font-size: 14px; line-height: 1.6; color: #555; }
+*/
+        /* 新版. 橫向滑動容器 */
+.feat-scroller {
+    display: flex;             /* 讓內容橫向排列 */
+    overflow-x: auto;          /* 開啟橫向滾動 */
+    gap: 12px;                 /* 卡片之間的間距 */
+    padding: 10px 15px;        /* 左右留白，避免卡片貼邊 */
+    scroll-snap-type: x mandatory; /* 讓滑動有「吸附感」，更像原生 App */
+    -webkit-overflow-scrolling: touch; /* 讓 iOS 滑動更順暢 */
+}
+
+/* 隱藏捲軸（選用，讓介面更乾淨） */
+.feat-scroller::-webkit-scrollbar {
+    display: none;
+}
+
+/* 2. 橫向卡片專用樣式 */
+.feat-item-card {
+    flex: 0 0 150px;           /* 重要：不縮放，固定寬度 150px */
+    scroll-snap-align: start;  /* 配合吸附感使用 */
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 圖片容器固定比例 */
+.feat-card-img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    background: #f9f9f9;
+}
+
+/* 資訊區域 */
+.feat-card-info {
+    padding: 8px;
+    text-align: center;
+    font-size: 13px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
         /* 3. 目錄區塊 (多重分類按鈕) */
         .cat-scroller { display: flex; gap: 8px; padding: 5px 5px; overflow-x: auto; background: white; white-space: nowrap; border-bottom: 1px solid #f0f0f0;  
                        /*margin-top: 0 !important; padding-top: 5px !important;  要不要留一點自己決定 */ }
@@ -86,7 +132,7 @@ line-height:1.4; }
         .pager { text-align: center; padding: 5px;margin-bottom: 65px !important; /* 🔥 強制加高底部，把按鈕往上頂 */; font-size:13px;}
         .pager button { padding: 5px; margin: 0 5px; background: white; border: 1px solid #ddd; border-radius: 5px; }
 
-
+/**新版二欄商品目錄**/
 /* 商品目錄網格容器樣式 (專用於 #catList) */
 .product-grid {    display: grid;    grid-template-columns: 1fr 1fr; /* 強制兩欄，寬度均分 */    gap: 10px; /* 卡片之間的間距 */    padding: 10px 15px; /* 容器邊距，與首頁一致 */    background: #f5f5f5; /* 背景色 */}
 /* 網格方塊卡片樣式 */
@@ -279,7 +325,7 @@ if (savedCart) {
         console.error(err);
     }
 }    
-// 🔥 新增：渲染首頁推薦商品
+// 🔥 新版：渲染首頁推薦商品：橫向滑動版
 function renderFeatured() {
     // 篩選邏輯：Note 欄位包含 "推薦" 或 "HOT" (不分大小寫)
     const featItems = allProducts.filter(p => 
@@ -288,21 +334,25 @@ function renderFeatured() {
     // 如果沒有設定推薦，就預設抓前 4 筆，避免首頁開天窗
     const itemsToShow = featItems.length > 0 ? featItems : allProducts.slice(0, 4);
     const container = document.querySelector('.feat-grid');
-container.innerHTML = itemsToShow.map(p => {
+    container.className = 'feat-scroller'; // 強制切換為橫向容器樣式
+    
+    container.innerHTML = itemsToShow.map(p => {
         // 判斷是否有連結，如果沒有連結，點擊後跳轉到「商品目錄」分頁
         const clickAction = p.link ? `window.open('${p.link}', '_blank')` : `switchTab('cat')`;
         
         return `
-            <div class="feat-item" onclick="${clickAction}">
-                <div class="p-img-container" style="height: 150px; overflow: hidden;">
-                    <img src="${p.img || 'https://via.placeholder.com/200x150?text=No+Img'}" 
-                         style="width: 100%; height: 100%; object-fit: cover;" 
-                         loading="lazy">
-                </div>
-                <div class="feat-info">
-                    <span style="display: block; font-weight: bold; margin-bottom: 4px;">${p.name}</span>
-                    <b style="color: #e44d26;">$${p.price}</b>
-                    <div style="font-size: 10px; color: #999; margin-top: 4px;">查看詳情 ></div>
+            <div class="feat-item-card" onclick="${clickAction}">
+         <img class="feat-card-img" src="${p.img || 'https://via.placeholder.com/150'}" loading="lazy">
+                <div class="feat-card-info">
+                    <div>
+                        <div style="font-weight:bold; margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                            ${p.name}
+                        </div>
+                        <div style="color:#e44d26; font-weight:bold;">$${p.price}</div>
+                    </div>
+                    <div style="font-size:10px; color:#06C755; margin-top:8px; border-top:1px solid #eee; padding-top:5px;">
+                        查看詳情 >
+                    </div>
                 </div>
             </div>
         `;
