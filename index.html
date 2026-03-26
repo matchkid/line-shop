@@ -265,74 +265,59 @@ const histPageSize = 5; // 歷史紀錄每頁顯示 5 筆，可自行調整
 
 // --- 初始化 (修正版) ---
 async function init() {
-    try {
-        await liff.init({ liffId: LIFF_ID });
-        if (!liff.isLoggedIn()) { liff.login(); return; }
-        
-        const profile = await liff.getProfile();
-        currentUser = { id: profile.userId, name: profile.displayName };
-        // 🔥 新增：從手機暫存讀取購物車
+    try {
+        await liff.init({ liffId: LIFF_ID });
+        if (!liff.isLoggedIn()) { liff.login(); return; }
+        
+        const profile = await liff.getProfile();
+        currentUser = { id: profile.userId, name: profile.displayName };
+        // 🔥 新增：從手機暫存讀取購物車
 const savedCart = localStorage.getItem('myCart');
 if (savedCart) {
-    try {
-        cart = JSON.parse(savedCart);
-        updateCartBar(); // 更新購物車按鈕數字
-    } catch (e) {
-        console.error("購物車資料損毀", e);
-        localStorage.removeItem('myCart');
-    }
+    try {
+        cart = JSON.parse(savedCart);
+        updateCartBar(); // 更新購物車按鈕數字
+    } catch (e) {
+        console.error("購物車資料損毀", e);
+        localStorage.removeItem('myCart');
+    }
 }
-        // 🔥 2. 【暫存處理：商品秒開關鍵】
-        // 進入 fetch 之前，先看手機有沒有上次存下來的商品
-        const cachedProducts = localStorage.getItem('allProductsCache');
-        if (cachedProducts) {
-            allProducts = JSON.parse(cachedProducts);
-            displayList = allProducts;
-            initCategories(); // 讓分類按鈕出來
-            renderFeatured(); // 讓首頁推薦出來
-            renderProducts(); // 讓商品目錄出來
-            // 先點擊第一個分類顯示畫面
-            if(document.getElementById('catBar').firstElementChild) {
-                document.getElementById('catBar').firstElementChild.click();
-            }
-        } else {
-        // 顯示載入中
-        document.getElementById('catList').innerHTML = '<div style="padding:20px;text-align:center;">正在載入商品...</div>';
+        // 顯示載入中
+        document.getElementById('catList').innerHTML = '<div style="padding:20px;text-align:center;">正在載入商品...</div>';
 
-        // 🔥 只發一次請求，一次拿回所有資料
-        const res = await fetch(`${GAS_URL}?action=init&userId=${currentUser.id}`);
-        const data = await res.json();
-        
-        // 1. 處理商品 更新資料與存檔
-        if (data.products) {
-            allProducts = data.products;
-            displayList = allProducts;
-            // 🔥 把最新拿到的資料存進手機，下次開就秒讀
-            localStorage.setItem('allProductsCache', JSON.stringify(data.products));
-            // 更新畫面（如果資料有變動，這時會默默更新成最新狀態）
-            initCategories();
-            renderFeatured();
-            // 如果目前是在商品目錄頁，就重刷一次確保價格/圖片是最新的
-            if (!document.getElementById('view-cat').classList.contains('hidden')) {
-                renderProducts();
-            }
-        }
+        // 🔥 只發一次請求，一次拿回所有資料
+        const res = await fetch(`${GAS_URL}?action=init&userId=${currentUser.id}`);
+        const data = await res.json();
+        
+        // 1. 處理商品
+        if (data.products) {
+            allProducts = data.products;
+            displayList = allProducts;
+            initCategories();
+            document.getElementById('catBar').firstElementChild.click(); // 預設點擊第一個分類
+            // 🔥 新增：渲染首頁推薦商品
+            renderFeatured();
+        }
 
-        // 2. 處理歷史紀錄 (存入變數，不顯示)
-        if (data.history) {     myHistory = data.history;        }
+        // 2. 處理歷史紀錄 (存入變數，不顯示)
+        if (data.history) {
+            myHistory = data.history;
+        }
 
-        // 3. 處理註冊
-        if (data.registered === false) {
-            document.getElementById('regModal').classList.remove('hidden');
-            // 自動填入 LINE 暱稱
-            document.getElementById('regName').value = currentUser.name;
-        }
+        // 3. 處理註冊
+        if (data.registered === false) {
+            document.getElementById('regModal').classList.remove('hidden');
+            // 自動填入 LINE 暱稱
+            document.getElementById('regName').value = currentUser.name;
+        }
 
-    } catch (err) {
-        alert("載入失敗：" + err);
-        console.error(err);
-    }
-}    
+    } catch (err) {
+        alert("載入失敗：" + err);
+        console.error(err);
+    }
+}    
+
+
 // 🔥 新版：渲染首頁推薦商品：橫向滑動版
 function renderFeatured() {
     // 篩選邏輯：Note 欄位包含 "推薦" 或 "HOT" (不分大小寫)
