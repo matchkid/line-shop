@@ -282,6 +282,20 @@ if (savedCart) {
         localStorage.removeItem('myCart');
     }
 }
+        // 🔥 2. 【暫存處理：商品秒開關鍵】
+        // 進入 fetch 之前，先看手機有沒有上次存下來的商品
+        const cachedProducts = localStorage.getItem('allProductsCache');
+        if (cachedProducts) {
+            allProducts = JSON.parse(cachedProducts);
+            displayList = allProducts;
+            initCategories(); // 讓分類按鈕出來
+            renderFeatured(); // 讓首頁推薦出來
+            renderProducts(); // 讓商品目錄出來
+            // 先點擊第一個分類顯示畫面
+            if(document.getElementById('catBar').firstElementChild) {
+                document.getElementById('catBar').firstElementChild.click();
+            }
+        } else {
         // 顯示載入中
         document.getElementById('catList').innerHTML = '<div style="padding:20px;text-align:center;">正在載入商品...</div>';
 
@@ -289,20 +303,23 @@ if (savedCart) {
         const res = await fetch(`${GAS_URL}?action=init&userId=${currentUser.id}`);
         const data = await res.json();
         
-        // 1. 處理商品
+        // 1. 處理商品 更新資料與存檔
         if (data.products) {
             allProducts = data.products;
             displayList = allProducts;
+            // 🔥 把最新拿到的資料存進手機，下次開就秒讀
+            localStorage.setItem('allProductsCache', JSON.stringify(data.products));
+            // 更新畫面（如果資料有變動，這時會默默更新成最新狀態）
             initCategories();
-            document.getElementById('catBar').firstElementChild.click(); // 預設點擊第一個分類
-            // 🔥 新增：渲染首頁推薦商品
             renderFeatured();
+            // 如果目前是在商品目錄頁，就重刷一次確保價格/圖片是最新的
+            if (!document.getElementById('view-cat').classList.contains('hidden')) {
+                renderProducts();
+            }
         }
 
         // 2. 處理歷史紀錄 (存入變數，不顯示)
-        if (data.history) {
-            myHistory = data.history;
-        }
+        if (data.history) {     myHistory = data.history;        }
 
         // 3. 處理註冊
         if (data.registered === false) {
